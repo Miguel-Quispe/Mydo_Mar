@@ -270,15 +270,21 @@
     <!-- Top Bar -->
     <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
         <div>
-            <h4 class="fw-bold text-dark mb-0">Diseñador 3D</h4>
+            <h4 class="fw-bold text-dark mb-0">
+                {{ isset($mueble) ? 'Editando Mueble' : 'Diseñador 3D' }}
+            </h4>
             <div class="d-flex align-items-center gap-2 mt-2">
-                <span class="badge bg-secondary">Proyecto</span>
-                <input type="text" id="project-name-input" class="form-control form-control-sm border-0 fw-bold" style="width: 200px; background: transparent" value="Mydo Mar" placeholder="Nombre del proyecto">
+                <span class="badge {{ isset($mueble) ? 'bg-warning text-dark' : 'bg-secondary' }}">Proyecto</span>
+                <input type="text" id="project-name-input" class="form-control form-control-sm border-0 fw-bold" style="width: 240px; background: transparent"
+                    value="{{ isset($mueble) ? $mueble->nombre : 'Mydo Mar' }}"
+                    placeholder="Nombre del proyecto">
             </div>
         </div>
         <div class="d-flex gap-3 align-items-center">
             <a href="{{ route('maestro.dashboard') }}" class="btn btn-light border fw-bold text-secondary px-3 py-2 rounded-2">Cancelar</a>
-            <button type="button" id="btn-submit-mueble" class="btn btn-dark fw-bold text-white px-4 py-2 rounded-2 shadow-sm">Guardar y Publicar</button>
+            <button type="button" id="btn-submit-mueble" class="btn btn-dark fw-bold text-white px-4 py-2 rounded-2 shadow-sm">
+                {{ isset($mueble) ? 'Guardar Cambios' : 'Guardar y Publicar' }}
+            </button>
 
             <button type="button" class="btn btn-warning fw-bold text-dark px-4 py-2 rounded-2 shadow-sm ms-2" id="btn-open-corte">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2">
@@ -329,48 +335,84 @@
             <div class="tab-content" id="biblioteca">
                 <div class="small fw-bold text-muted text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">Muebles de Ejemplo Simples</div>
                 
-                <div class="module-item mb-2" id="btn-ejemplo-escritorio" role="button" title="Cargar Escritorio Básico">
-                    <span></span>
+                <div class="module-item mb-2 d-flex align-items-center gap-2 p-2 rounded-3 border" id="btn-ejemplo-escritorio" role="button" title="Cargar Escritorio Básico">
+                    <div class="d-flex align-items-center justify-content-center rounded-2 bg-light text-warning p-2" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="4" rx="1"/>
+                            <path d="M4 9v11M20 9v11M14 9v11M14 13h6M14 17h6"/>
+                        </svg>
+                    </div>
                     <div>
                         <div class="fw-bold text-dark" style="font-size: 0.85rem;">Escritorio Básico</div>
                         <div class="text-muted" style="font-size: 0.72rem;">1200 × 600 × 750 mm</div>
                     </div>
                 </div>
 
-                <div class="module-item mb-2" id="btn-ejemplo-estanteria" role="button" title="Cargar Estantería 3 Repisas">
-                    <span></span>
+                <div class="module-item mb-2 d-flex align-items-center gap-2 p-2 rounded-3 border" id="btn-ejemplo-estanteria" role="button" title="Cargar Estantería 4 Niveles">
+                    <div class="d-flex align-items-center justify-content-center rounded-2 bg-light text-primary p-2" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="1"/>
+                            <path d="M4 7h16M4 12h16M4 17h16"/>
+                        </svg>
+                    </div>
                     <div>
                         <div class="fw-bold text-dark" style="font-size: 0.85rem;">Estantería / Librero</div>
                         <div class="text-muted" style="font-size: 0.72rem;">600 × 300 × 1200 mm</div>
                     </div>
                 </div>
 
-                <div class="module-item mb-2" id="btn-ejemplo-gabinete" role="button" title="Cargar Gabinete Bajo TV">
-                    <span></span>
+                <div class="module-item mb-2 d-flex align-items-center gap-2 p-2 rounded-3 border" id="btn-ejemplo-gabinete" role="button" title="Cargar Gabinete Bajo TV">
+                    <div class="d-flex align-items-center justify-content-center rounded-2 bg-light text-success p-2" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="6" width="20" height="12" rx="2"/>
+                            <line x1="12" y1="6" x2="12" y2="18"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M6 18v2M18 18v2"/>
+                        </svg>
+                    </div>
                     <div>
                         <div class="fw-bold text-dark" style="font-size: 0.85rem;">Gabinete Bajo TV</div>
                         <div class="text-muted" style="font-size: 0.72rem;">1000 × 400 × 550 mm</div>
                     </div>
                 </div>
 
-                <div class="module-item mb-2" id="btn-ejemplo-mesa" role="button" title="Cargar Mesa de Centro">
-                    <span></span>
+                <div class="module-item mb-2 d-flex align-items-center gap-2 p-2 rounded-3 border" id="btn-ejemplo-mesa" role="button" title="Cargar Mesa de Centro">
+                    <div class="d-flex align-items-center justify-content-center rounded-2 bg-light text-secondary p-2" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="7" rx="9" ry="3"/>
+                            <path d="M3 7v2c0 1.66 4.03 3 9 3s9-1.34 9-3V7"/>
+                            <path d="M5 9v11M19 9v11"/>
+                        </svg>
+                    </div>
                     <div>
                         <div class="fw-bold text-dark" style="font-size: 0.85rem;">Mesa de Centro</div>
                         <div class="text-muted" style="font-size: 0.72rem;">800 × 500 × 450 mm</div>
                     </div>
                 </div>
 
-                <div class="module-item mb-2" id="btn-ejemplo-puerta" role="button" title="Cargar Gabinete con Puerta y Bisagras">
-                    <span></span>
+                <div class="module-item mb-2 d-flex align-items-center gap-2 p-2 rounded-3 border" id="btn-ejemplo-puerta" role="button" title="Cargar Gabinete con Puerta y Bisagras">
+                    <div class="d-flex align-items-center justify-content-center rounded-2 bg-light text-info p-2" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M9 3v18"/>
+                            <circle cx="15" cy="12" r="1.5" fill="currentColor"/>
+                        </svg>
+                    </div>
                     <div>
                         <div class="fw-bold text-dark" style="font-size: 0.85rem;">Gabinete con Puerta y Bisagras</div>
                         <div class="text-muted" style="font-size: 0.72rem;">Con 2 bisagras 35mm y jalador</div>
                     </div>
                 </div>
 
-                <div class="module-item mb-3" id="btn-ejemplo-cajon" role="button" title="Cargar Módulo con Cajón y Rieles">
-                    <span></span>
+                <div class="module-item mb-3 d-flex align-items-center gap-2 p-2 rounded-3 border" id="btn-ejemplo-cajon" role="button" title="Cargar Módulo con Cajón y Rieles">
+                    <div class="d-flex align-items-center justify-content-center rounded-2 bg-light text-danger p-2" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="10" y1="8" x2="14" y2="8"/>
+                            <line x1="10" y1="16" x2="14" y2="16"/>
+                        </svg>
+                    </div>
                     <div>
                         <div class="fw-bold text-dark" style="font-size: 0.85rem;">Módulo Cajón con Rieles</div>
                         <div class="text-muted" style="font-size: 0.72rem;">Con correderas telescópicas</div>
@@ -629,9 +671,15 @@
         </div>
     </div>
     
-    <!-- Formulario Seguro para Guardar Mueble (no envuelve el diseñador para evitar recargas accidentales) -->
+    <!-- Formulario Seguro para Guardar/Actualizar Mueble -->
+    @isset($mueble)
+    <form action="{{ route('maestro.muebles.update', $mueble->id) }}" method="POST" id="form-mueble" onsubmit="return false;">
+        @csrf
+        @method('PUT')
+    @else
     <form action="{{ route('muebles.store') }}" method="POST" id="form-mueble" onsubmit="return false;">
         @csrf
+    @endisset
         <input type="hidden" name="nombre" id="form-nombre">
         <input type="hidden" name="material" id="form-material" value="Melamina 18mm">
         <input type="hidden" name="precio" id="form-precio" value="0">
@@ -1024,7 +1072,31 @@
         if (btnSubmit) {
             btnSubmit.addEventListener('click', (e) => {
                 e.preventDefault();
-                openPublishModal();
+
+                if (window.__editMode__) {
+                    // Modo edicion: guardar directamente sin modal
+                    const nombre = document.getElementById('project-name-input')?.value?.trim() || window.__muebleNombre__ || '';
+                    if (!nombre) { alert('Escribe un nombre para el mueble.'); return; }
+
+                    const dims       = typeof window.getSceneBoundingDimensions === 'function' ? window.getSceneBoundingDimensions() : window.__muebleDims__ || '';
+                    const screenshot = typeof window.getScene3DScreenshot === 'function' ? window.getScene3DScreenshot() : '';
+                    const exportData = typeof window.getExportData === 'function' ? window.getExportData() : {};
+
+                    document.getElementById('form-nombre').value          = nombre;
+                    document.getElementById('form-material').value        = document.getElementById('pub-material')?.value || window.__muebleMaterial__ || 'Melamina 18mm';
+                    document.getElementById('form-precio').value          = document.getElementById('pub-precio')?.value  || window.__mueblePrecio__ || 0;
+                    document.getElementById('form-dimensiones').value     = dims;
+                    document.getElementById('form-descripcion').value     = document.getElementById('pub-descripcion')?.value || window.__muebleDesc__ || '';
+                    document.getElementById('form-imagen-base64').value   = screenshot;
+                    document.getElementById('form-estructura-json').value = JSON.stringify(exportData);
+
+                    btnSubmit.disabled  = true;
+                    btnSubmit.innerText = 'Guardando...';
+                    HTMLFormElement.prototype.submit.call(formMueble);
+                } else {
+                    // Modo crear: abrir modal de publicacion
+                    openPublishModal();
+                }
             });
         }
         if (btnClosePub) btnClosePub.addEventListener('click', closePublishModal);
@@ -1066,5 +1138,32 @@
             });
         }
     });
+
+    // Variables de modo edicion (inyectadas desde PHP de forma segura)
+    window.__editMode__      = {{ isset($mueble) ? 'true' : 'false' }};
+    window.__muebleNombre__  = @json(isset($mueble) ? $mueble->nombre      : '');
+    window.__muebleDims__    = @json(isset($mueble) ? $mueble->dimensiones : '');
+    window.__muebleMaterial__= @json(isset($mueble) ? ($mueble->material ?? 'Melamina 18mm') : 'Melamina 18mm');
+    window.__mueblePrecio__  = {{ isset($mueble) ? (float)($mueble->precio ?? 0) : 0 }};
+    window.__muebleDesc__    = @json(isset($mueble) ? ($mueble->descripcion ?? '') : '');
+    window.__muebleJSON__    = @json(isset($mueble) ? $mueble->estructura_json : null);
+
+    // Modo Edicion: reconstruir escena 3D desde el JSON guardado
+    if (window.__editMode__ && window.__muebleJSON__) {
+        (function waitForDesigner() {
+            if (typeof window.cargarDesdeJSON !== 'function' || typeof clearAllObjects === 'undefined') {
+                setTimeout(waitForDesigner, 200);
+                return;
+            }
+            try {
+                const data = typeof window.__muebleJSON__ === 'string'
+                    ? JSON.parse(window.__muebleJSON__)
+                    : window.__muebleJSON__;
+                if (data) window.cargarDesdeJSON(data);
+            } catch(e) {
+                console.warn('No se pudo restaurar el disenio guardado:', e);
+            }
+        })();
+    }
 </script>
 @endsection

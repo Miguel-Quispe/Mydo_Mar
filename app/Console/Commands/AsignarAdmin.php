@@ -23,7 +23,7 @@ class AsignarAdmin extends Command
         $user->admin = true;
         $user->save();
 
-        $this->info("✅ El usuario '{$user->nombre}' ({$user->email}) ahora es Administrador.");
+        $this->info("El usuario '{$user->nombre}' ({$user->email}) ahora es Administrador.");
         return 0;
     }
 }

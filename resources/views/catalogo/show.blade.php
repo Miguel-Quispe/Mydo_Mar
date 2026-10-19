@@ -148,37 +148,50 @@
                 </div>
 
                 <!-- Botones de Acción (Contacto y Favoritos) -->
-                <div class="pt-3 border-top d-flex flex-column flex-sm-row gap-2">
-                    <!-- Botón de WhatsApp -->
-                    @if($linkWhatsapp)
-                        <a href="{{ $linkWhatsapp }}" 
-                           target="_blank" 
-                           class="btn btn-success btn-lg fw-bold flex-grow-1 shadow-sm py-2 d-flex align-items-center justify-content-center gap-2" 
-                           style="border-radius: 10px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                            Contactar por WhatsApp
-                        </a>
-                    @else
-                        <button class="btn btn-secondary btn-lg fw-bold flex-grow-1 py-2" style="border-radius: 10px;" disabled>
-                            Contacto no disponible
-                        </button>
-                    @endif
+                <div class="pt-3 border-top d-flex flex-column gap-2">
+                    <!-- Botón Guía de Armado (siempre visible, destacado) -->
+                    <a href="{{ route('catalogo.armado', $mueble->id) }}"
+                       class="btn btn-dark btn-lg fw-bold w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                       style="border-radius: 10px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                        </svg>
+                        Ver Guía de Armado Paso a Paso
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
 
-                    <!-- Botón Favoritos -->
-                    @auth
-                        <form action="{{ route('favoritos.toggle', $mueble->id) }}" method="POST" class="m-0">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-warning btn-lg fw-bold text-dark w-100 py-2 h-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px;">
+                    <div class="d-flex flex-sm-row gap-2">
+                        <!-- Botón de WhatsApp -->
+                        @if($linkWhatsapp)
+                            <a href="{{ $linkWhatsapp }}" 
+                               target="_blank" 
+                               class="btn btn-success btn-lg fw-bold flex-grow-1 shadow-sm py-2 d-flex align-items-center justify-content-center gap-2" 
+                               style="border-radius: 10px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                Contactar por WhatsApp
+                            </a>
+                        @else
+                            <button class="btn btn-secondary btn-lg fw-bold flex-grow-1 py-2" style="border-radius: 10px;" disabled>
+                                Contacto no disponible
+                            </button>
+                        @endif
+
+                        <!-- Botón Favoritos -->
+                        @auth
+                            <form action="{{ route('favoritos.toggle', $mueble->id) }}" method="POST" class="m-0">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-warning btn-lg fw-bold text-dark w-100 py-2 h-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                    Favorito
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-outline-warning btn-lg fw-bold text-dark w-100 py-2 h-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px;">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                                 Favorito
-                            </button>
-                        </form>
-                    @else
-                        <a href="{{ route('login') }}" class="btn btn-outline-warning btn-lg fw-bold text-dark w-100 py-2 h-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                            Favorito
-                        </a>
-                    @endauth
+                            </a>
+                        @endauth
+                    </div>
                 </div>
 
             </div>

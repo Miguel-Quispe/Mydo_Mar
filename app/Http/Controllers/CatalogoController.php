@@ -62,4 +62,22 @@ class CatalogoController extends Controller
 
         return view('catalogo.show', compact('mueble', 'linkWhatsapp'));
     }
+
+    /**
+     * Muestra la guía interactiva de armado paso a paso para el cliente o carpintero.
+     */
+    public function guiaArmado($id)
+    {
+        $mueble = Mueble::with('user')->findOrFail($id);
+
+        $telefono = preg_replace('/[^0-9]/', '', $mueble->user->telefono ?? '');
+        if ($telefono && !str_starts_with($telefono, '591')) {
+            $telefono = '591' . $telefono;
+        }
+
+        $mensaje = rawurlencode("Hola {$mueble->user->nombre}, estoy consultando la guía de armado de '{$mueble->nombre}' en Mydo-mar y quisiera asesoramiento.");
+        $linkWhatsapp = $telefono ? "https://wa.me/{$telefono}?text={$mensaje}" : null;
+
+        return view('catalogo.armado', compact('mueble', 'linkWhatsapp'));
+    }
 }

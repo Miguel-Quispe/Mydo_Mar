@@ -405,73 +405,400 @@
 
         /* ====== SECCIÓN: PARA EL MAESTRO ====== */
         .section-maestro {
-            padding: 80px 0;
-            background: var(--color-dark);
+            padding: 96px 0;
+            background: radial-gradient(circle at 80% 20%, rgba(217,119,6,0.14) 0%, rgba(15,23,42,1) 65%), #0f172a;
+            position: relative;
+            overflow: hidden;
+        }
+        .section-maestro::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+            opacity: 0.7;
         }
         .maestro-inner {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 3.5rem;
             align-items: center;
+            position: relative;
+            z-index: 1;
         }
         .maestro-tag {
             display: inline-flex; align-items: center; gap: .5rem;
-            background: rgba(217,119,6,.2);
+            background: rgba(217,119,6,.18);
+            border: 1px solid rgba(251,191,36,.3);
             color: #fbbf24;
-            font-size: .78rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: .07em;
-            padding: .35rem .9rem;
+            font-size: .8rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .08em;
+            padding: .4rem 1rem;
             border-radius: 100px;
             margin-bottom: 1.25rem;
         }
         .maestro-inner h2 {
-            font-size: clamp(1.6rem, 3vw, 2.25rem);
+            font-size: clamp(1.8rem, 3.2vw, 2.5rem);
             font-weight: 800;
             letter-spacing: -.5px;
             color: #fff;
+            line-height: 1.2;
             margin-bottom: 1rem;
         }
-        .maestro-inner p { color: #9ca3af; font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem; }
-        .maestro-features { list-style: none; padding: 0; margin: 0 0 2rem; }
+        .maestro-inner h2 span {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .maestro-inner p { color: #94a3b8; font-size: 1.05rem; line-height: 1.7; margin-bottom: 1.75rem; }
+        .maestro-features { list-style: none; padding: 0; margin: 0 0 2.25rem; }
         .maestro-features li {
-            display: flex; align-items: flex-start; gap: .75rem;
-            font-size: .9rem; color: #d1d5db; margin-bottom: .75rem;
+            display: flex; align-items: flex-start; gap: .85rem;
+            font-size: .95rem; color: #e2e8f0; margin-bottom: 1rem;
             line-height: 1.5;
         }
-        .maestro-features li::before {
-            content: '✓';
-            width: 20px; height: 20px;
+        .maestro-features li .feat-icon {
+            width: 24px; height: 24px;
             border-radius: 50%;
-            background: #d97706;
+            background: linear-gradient(135deg, #d97706, #b45309);
             color: #fff;
-            font-size: .7rem;
+            font-size: .75rem;
             font-weight: 900;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(217,119,6,0.4);
             margin-top: 1px;
         }
         .btn-maestro {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: var(--color-accent);
-            color: var(--color-dark);
-            font-size: 1rem; font-weight: 700;
-            border-radius: 10px;
-            padding: .85rem 2rem;
+            display: inline-flex; align-items: center; gap: .6rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            color: #0f172a;
+            font-size: 1.05rem; font-weight: 800;
+            border-radius: 12px;
+            padding: .95rem 2.2rem;
             text-decoration: none;
-            transition: all .2s;
+            box-shadow: 0 4px 18px rgba(217,119,6,0.35);
+            transition: all .25s ease;
         }
-        .btn-maestro:hover { background: #b45309; color: #fff; transform: translateY(-1px); }
-        /* Mini preview del diseñador en fondo oscuro */
-        .maestro-preview {
-            background: #1c1917;
-            border-radius: 16px;
-            padding: 1.5rem;
+        .btn-maestro:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(217,119,6,0.5);
+            color: #000;
+        }
+
+        /* Mockup ventana Diseñador 3D Real */
+        .maestro-preview-3d {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.06);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #1e293b;
+        }
+        .preview-topbar-3d {
+            background: #111827;
+            padding: .75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #1f2937;
+        }
+        .preview-topbar-left {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+        .preview-dots-3d { display: flex; gap: .4rem; }
+        .preview-dot-3d { width: 10px; height: 10px; border-radius: 50%; }
+        .preview-title-3d {
+            color: #f8fafc;
+            font-size: .8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .preview-title-3d .badge-proj {
+            background: #374151;
+            color: #d1d5db;
+            font-size: .65rem;
+            padding: .15rem .5rem;
+            border-radius: 4px;
+        }
+        .preview-topbar-actions {
+            display: flex;
+            gap: .45rem;
+            align-items: center;
+        }
+        .btn-preview-publish {
+            background: #1f2937;
+            color: #f3f4f6;
             border: 1px solid #374151;
+            border-radius: 6px;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: .35rem .75rem;
         }
-        .preview-header {
-            display: flex; gap: .4rem; margin-bottom: 1rem;
+        .btn-preview-cut {
+            background: #f59e0b;
+            color: #111827;
+            border: none;
+            border-radius: 6px;
+            font-size: .68rem;
+            font-weight: 800;
+            padding: .35rem .75rem;
         }
-        .preview-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+        /* Área de trabajo 3D */
+        .preview-workbench-3d {
+            display: grid;
+            grid-template-columns: 165px 1fr;
+            background: #f8fafc;
+            height: 380px;
+        }
+
+        /* Sidebar izquierda */
+        .preview-sidebar-3d {
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .preview-tabs-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f1f5f9;
+        }
+        .preview-tab-btn {
+            font-size: .68rem;
+            font-weight: 700;
+            padding: .5rem;
+            text-align: center;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+        }
+        .preview-tab-btn.active {
+            color: #d97706;
+            background: #ffffff;
+            border-bottom-color: #d97706;
+        }
+        .preview-elements-list {
+            padding: .6rem;
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+        }
+        .preview-elem-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: .45rem .6rem;
+            font-size: .7rem;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .preview-elem-item svg { color: #d97706; }
+        .preview-bottom-params {
+            margin-top: auto;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+            padding: .6rem;
+        }
+        .preview-btn-group-lock {
+            background: #475569;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: .35rem .5rem;
+            font-size: .65rem;
+            font-weight: 700;
+            width: 100%;
+            text-align: center;
+            margin-bottom: .45rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .3rem;
+        }
+        .preview-dim-inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .25rem;
+            text-align: center;
+        }
+        .preview-dim-cell {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: .2rem .1rem;
+            font-size: .6rem;
+        }
+        .preview-dim-cell span { display: block; font-size: .55rem; color: #64748b; }
+        .preview-dim-cell strong { color: #0f172a; font-size: .65rem; }
+
+        /* Lienzo 3D Three.js */
+        .preview-viewport-3d {
+            position: relative;
+            background: radial-gradient(circle at 50% 40%, #f1f5f9 0%, #cbd5e1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        /* Cuadrícula isométrica 3D */
+        .viewport-3d-grid {
+            position: absolute;
+            width: 320px;
+            height: 220px;
+            bottom: 30px;
+            background-image: 
+                linear-gradient(rgba(148, 163, 184, 0.35) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.35) 1px, transparent 1px);
+            background-size: 20px 20px;
+            transform: perspective(600px) rotateX(60deg) rotateZ(-25deg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            border-radius: 4px;
+        }
+        /* Ejes RGB Three.js */
+        .axes-indicator {
+            position: absolute;
+            bottom: 95px;
+            left: calc(50% - 10px);
+            width: 30px;
+            height: 30px;
+        }
+        .axis-y { position: absolute; left: 14px; bottom: 14px; width: 2px; height: 35px; background: #22c55e; }
+        .axis-x { position: absolute; left: 14px; bottom: 14px; width: 35px; height: 2px; background: #ef4444; transform: rotate(-25deg); transform-origin: left; }
+        .axis-z { position: absolute; left: 14px; bottom: 14px; width: 35px; height: 2px; background: #3b82f6; transform: rotate(145deg); transform-origin: left; }
+
+        /* Mueble 3D renderizado */
+        .rendered-furniture-3d {
+            position: relative;
+            z-index: 2;
+            width: 155px;
+            height: 190px;
+            transform: perspective(700px) rotateX(15deg) rotateY(-25deg);
+            transform-style: preserve-3d;
+            filter: drop-shadow(15px 25px 20px rgba(0,0,0,0.3));
+        }
+        .mueble-3d-box {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
+            border: 5px solid #92400e;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .mueble-3d-inner {
+            display: flex;
+            flex: 1;
+        }
+        .m-col-izq {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 4px solid #92400e;
+        }
+        .m-col-der {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .m-repisa {
+            border-bottom: 4px solid #92400e;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .52rem;
+            color: #fed7aa;
+            font-weight: 700;
+        }
+        .m-repisa.highlight {
+            background: rgba(254, 243, 199, 0.25);
+            outline: 1.5px dashed #38bdf8;
+        }
+        /* Herrajes visuales (bisagras y jalador) */
+        .m-jalador {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            width: 3px;
+            height: 25px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* Gizmo / Controles flotantes a la derecha */
+        .preview-gizmo-bar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: .3rem;
+            display: flex;
+            flex-direction: column;
+            gap: .3rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            z-index: 5;
+        }
+        .gizmo-tool-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .62rem;
+            font-weight: 800;
+            color: #475569;
+        }
+        .gizmo-tool-btn.active {
+            background: #d97706;
+            color: #ffffff;
+            border-color: #d97706;
+        }
+
+        /* Barra inferior: Resumen Técnico de Corte */
+        .preview-footer-3d {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: .5rem .9rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .65rem;
+            border-top: 1px solid #1e293b;
+        }
+        .preview-footer-3d span.accent {
+            color: #fbbf24;
+            font-weight: 700;
+        }
+        .preview-footer-3d .badge-ready {
+            background: rgba(34,197,94,0.15);
+            color: #4ade80;
+            font-weight: 700;
+            padding: .15rem .5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(74,222,128,0.3);
+        }
 
         /* ====== FOOTER ====== */
         .footer {
@@ -509,6 +836,9 @@
             .hero { padding: 48px 0 40px; }
             .hero-actions { flex-direction: column; }
             .btn-hero-primary, .btn-hero-secondary { justify-content: center; }
+            .preview-workbench-3d { grid-template-columns: 1fr; height: auto; }
+            .preview-viewport-3d { height: 260px; }
+            .preview-footer-3d { flex-direction: column; gap: .4rem; text-align: center; }
         }
     </style>
 </head>
@@ -699,73 +1029,187 @@
 <section class="section-maestro" id="para-maestros">
     <div class="container">
         <div class="maestro-inner">
-            <!-- Texto -->
+            <!-- Texto y Beneficios del Maestro -->
             <div>
-                <div class="maestro-tag">Para Maestros Carpinteros</div>
-                <h2>Tu taller, ahora con herramientas digitales de precisión</h2>
+                <div class="maestro-tag">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    Herramientas de Precisión 3D
+                </div>
+                <h2>Tu taller ahora con <span>Diseñador 3D & Optimización</span></h2>
                 <p>
-                    Usa el Diseñador Técnico 2D para crear el despiece exacto de cada mueble, 
-                    publica tu catálogo y conecta directamente con clientes que valoran la calidad artesanal.
+                    Lleva tu carpintería al siguiente nivel. Modela muebles en Melamina de 18mm en un entorno 3D interactivo, aplica texturas reales, calcula el despiece automático y genera hojas de corte optimizadas con planos PDF listos para fabricar.
                 </p>
                 <ul class="maestro-features">
-                    <li>Diseñador 2D con cálculo automático de zonas y tableros de Melamina / MDF / Madera</li>
-                    <li>Lista de despiece generada al instante: piezas, largos, anchos y espesor</li>
-                    <li>Publicación directa al catálogo de la plataforma con precio referencial</li>
-                    <li>Los clientes te contactan directamente por WhatsApp para cotizar</li>
+                    <li>
+                        <span class="feat-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                        <div>
+                            <strong style="color:#f8fafc; font-size:.95rem; margin-bottom:2px;">Diseñador 3D Interactivo (Three.js):</strong>
+                            Crea tableros verticales y horizontales, agrupa ensambles completos y visualiza en perspectivas 3D, Frontal, Superior y Lateral.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feat-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                        <div>
+                            <strong style="color:#f8fafc; font-size:.95rem; margin-bottom:2px;">Texturas con Veta Real & Herrajes:</strong>
+                            Aplica acabados de Roble, Nogal, Grafito o Mármol e integra bisagras de cazoleta de 35mm y rieles telescópicos automáticamente.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feat-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                        <div>
+                            <strong style="color:#f8fafc; font-size:.95rem; margin-bottom:2px;">Optimizador de Corte & Planos PDF:</strong>
+                            Algoritmo bin-packing para láminas de melamina (2440×1220 mm) con cálculo de kerf y descarga de planos de taller.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feat-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                        <div>
+                            <strong style="color:#f8fafc; font-size:.95rem; margin-bottom:2px;">Catálogo Digital & WhatsApp Directo:</strong>
+                            Publica tus modelos con captura 3D automática para que los clientes coticen al instante por WhatsApp.
+                        </div>
+                    </li>
                 </ul>
-                @if(Route::has('register'))
-                <a href="{{ route('register') }}" class="btn-maestro">
-                    Registrarme como Maestro
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-                @endif
+
+                @auth
+                    @if(auth()->user()->rol_id == 1 || str_starts_with(auth()->user()->clave_rol ?? '', 'MAE'))
+                        <a href="{{ route('maestro.dashboard') }}" class="btn-maestro">
+                            Ir a mi Panel de Maestro
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                    @else
+                        <a href="{{ route('muebles.create') }}" class="btn-maestro">
+                            Abrir Diseñador 3D
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                    @endif
+                @else
+                    @if(Route::has('register'))
+                        <a href="{{ route('register') }}" class="btn-maestro">
+                            Registrarme como Maestro
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                    @endif
+                @endauth
             </div>
 
-            <!-- Preview del diseñador (decorativo) -->
-            <div class="maestro-preview">
-                <div class="preview-header">
-                    <div class="preview-dot" style="background:#ef4444"></div>
-                    <div class="preview-dot" style="background:#f59e0b"></div>
-                    <div class="preview-dot" style="background:#22c55e"></div>
-                </div>
-                <!-- Representación del panel de control + lienzo -->
-                <div style="display:grid; grid-template-columns:1fr 1.8fr; gap:.75rem;">
-                    <!-- Panel lateral -->
-                    <div style="background:#292524; border-radius:8px; padding:.75rem; font-size:.65rem; color:#a8a29e;">
-                        <div style="color:#fbbf24; font-weight:700; font-size:.7rem; margin-bottom:.75rem;">Control de Zonas</div>
-                        <div style="background:#1c1917; border-radius:4px; padding:.4rem .6rem; margin-bottom:.4rem; color:#6b7280;">Alto: 1800mm</div>
-                        <div style="background:#1c1917; border-radius:4px; padding:.4rem .6rem; margin-bottom:.75rem; color:#6b7280;">Ancho: 900mm</div>
-                        <div style="background:#1d4ed8; border-radius:4px; padding:.4rem .6rem; text-align:center; color:#fff; font-weight:600; margin-bottom:.4rem;">+ Estante</div>
-                        <div style="background:#166534; border-radius:4px; padding:.4rem .6rem; text-align:center; color:#fff; font-weight:600;">+ Parante</div>
+            <!-- Preview fiel del Diseñador 3D del Maestro -->
+            <div class="maestro-preview-3d">
+                <!-- Barra superior de la App -->
+                <div class="preview-topbar-3d">
+                    <div class="preview-topbar-left">
+                        <div class="preview-dots-3d">
+                            <div class="preview-dot-3d" style="background:#ef4444"></div>
+                            <div class="preview-dot-3d" style="background:#f59e0b"></div>
+                            <div class="preview-dot-3d" style="background:#22c55e"></div>
+                        </div>
+                        <div class="preview-title-3d">
+                            <span>Diseñador 3D</span>
+                            <span class="badge-proj">Proyecto: Mydo Mar</span>
+                        </div>
                     </div>
-                    <!-- Mini lienzo oscuro -->
-                    <div style="background:#1c1917; border-radius:8px; padding:.5rem; display:flex; align-items:center; justify-content:center;">
-                        <div style="width:100%; aspect-ratio:4/5; border:8px solid #92400e; border-radius:2px; display:flex; overflow:hidden;">
-                            <div style="flex:1; display:flex; flex-direction:column;">
-                                <div style="display:flex; flex:1;">
-                                    <div style="flex:1; background:#1a2e1a; border:1px solid #14532d;"></div>
-                                    <div style="width:8px; background:#92400e;"></div>
-                                    <div style="flex:1.5; background:#2e1a1a; border:1px solid #7f1d1d;"></div>
+                    <div class="preview-topbar-actions">
+                        <div class="btn-preview-cut">Configurar Corte</div>
+                        <div class="btn-preview-publish">Guardar y Publicar</div>
+                    </div>
+                </div>
+
+                <!-- Workbench 3D dividido (Sidebar + Viewport Three.js) -->
+                <div class="preview-workbench-3d">
+                    <!-- Sidebar de Herramientas -->
+                    <div class="preview-sidebar-3d">
+                        <div class="preview-tabs-top">
+                            <div class="preview-tab-btn active">Elementos</div>
+                            <div class="preview-tab-btn">Biblioteca</div>
+                        </div>
+                        <div class="preview-elements-list">
+                            <div class="preview-elem-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                                Habitación
+                            </div>
+                            <div class="preview-elem-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="1"/></svg>
+                                Vertical (18mm)
+                            </div>
+                            <div class="preview-elem-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="1"/></svg>
+                                Horizontal (18mm)
+                            </div>
+                        </div>
+
+                        <!-- Parámetros Inferiores -->
+                        <div class="preview-bottom-params">
+                            <div class="preview-btn-group-lock">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Bloquear / Agrupar
+                            </div>
+                            <div class="preview-dim-inputs">
+                                <div class="preview-dim-cell">
+                                    <span>Grosor</span>
+                                    <strong>18 mm</strong>
                                 </div>
-                                <div style="height:8px; background:#92400e; width:100%;"></div>
-                                <div style="display:flex; flex:1.5;">
-                                    <div style="flex:1; background:#1a2e1a; border:1px solid #14532d;"></div>
-                                    <div style="width:8px; background:#92400e;"></div>
-                                    <div style="flex:1.5; background:#1a1a2e; border:1px solid #1e1b4b; display:flex; flex-direction:column;">
-                                        <div style="flex:1; border-bottom:4px solid #92400e;"></div>
-                                        <div style="flex:1;"></div>
-                                    </div>
+                                <div class="preview-dim-cell">
+                                    <span>Alto</span>
+                                    <strong>1800</strong>
+                                </div>
+                                <div class="preview-dim-cell">
+                                    <span>Ancho</span>
+                                    <strong>900</strong>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Viewport 3D Three.js -->
+                    <div class="preview-viewport-3d">
+                        <!-- Cuadrícula isométrica 3D -->
+                        <div class="viewport-3d-grid"></div>
+
+                        <!-- Ejes dimensionales RGB -->
+                        <div class="axes-indicator">
+                            <div class="axis-y"></div>
+                            <div class="axis-x"></div>
+                            <div class="axis-z"></div>
+                        </div>
+
+                        <!-- Mueble renderizado en 3D -->
+                        <div class="rendered-furniture-3d">
+                            <div class="mueble-3d-box">
+                                <div class="mueble-3d-inner">
+                                    <!-- Columna izquierda -->
+                                    <div class="m-col-izq">
+                                        <div class="m-repisa">430x423</div>
+                                        <div class="m-repisa highlight">Melamina 18mm</div>
+                                        <div class="m-repisa" style="border-bottom:none">430x423</div>
+                                    </div>
+                                    <!-- Columna derecha -->
+                                    <div class="m-col-der">
+                                        <div class="m-repisa" style="flex:1.8">Colgador</div>
+                                        <div class="m-repisa" style="flex:1; border-bottom:none">Cajonera</div>
+                                    </div>
+                                </div>
+                                <div class="m-jalador"></div>
+                            </div>
+                        </div>
+
+                        <!-- Gizmo de vistas a la derecha -->
+                        <div class="preview-gizmo-bar">
+                            <div class="gizmo-tool-btn">⤢</div>
+                            <div class="gizmo-tool-btn">↻</div>
+                            <div class="gizmo-tool-btn active">3D</div>
+                            <div class="gizmo-tool-btn">X</div>
+                            <div class="gizmo-tool-btn">Y</div>
+                            <div class="gizmo-tool-btn">Z</div>
+                        </div>
+                    </div>
                 </div>
-                <div style="margin-top:.75rem; background:#292524; border-radius:6px; padding:.6rem .75rem;">
-                    <div style="font-size:.65rem; color:#6b7280; margin-bottom:.35rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Despiece Calculado</div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:.25rem; font-size:.6rem; color:#a8a29e; text-align:center;">
-                        <span>Pieza</span><span>Cant.</span><span>Largo</span><span>Ancho</span>
-                        <span style="color:#d1d5db">Lateral</span><span>2</span><span>1800</span><span>450</span>
-                        <span style="color:#d1d5db">Estante</span><span>1</span><span>864</span><span>430</span>
+
+                <!-- Footer técnico: Optimización de Corte -->
+                <div class="preview-footer-3d">
+                    <div>
+                        <span>Optimización Bin-Packing: <span class="accent">2 Láminas (2440×1220 mm)</span> • Melamina Nogal 18mm</span>
+                    </div>
+                    <div>
+                        <span class="badge-ready">Planos PDF Listos</span>
                     </div>
                 </div>
             </div>

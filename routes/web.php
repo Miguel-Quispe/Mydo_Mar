@@ -15,6 +15,7 @@ use App\Http\Controllers\MuebleController;
 Route::get('/', [WelcomeController::class, 'index'])->name('inicio');
 Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo.index');
 Route::get('/catalogo/{id}', [CatalogoController::class, 'show'])->name('catalogo.show');
+Route::get('/catalogo/{id}/guia-armado', [CatalogoController::class, 'guiaArmado'])->name('catalogo.armado');
 
 // Rutas de autenticación (Login, Registro)
 Auth::routes();

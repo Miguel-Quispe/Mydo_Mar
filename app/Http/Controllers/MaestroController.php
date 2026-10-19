@@ -26,45 +26,61 @@ class MaestroController extends Controller
     }
 
     /**
-     * Muestra el formulario para editar un mueble existente.
+     * Abre el disenador 3D cargando el mueble existente para edicion.
      */
     public function edit($id)
     {
         $mueble = Mueble::where('user_id', auth()->id())->findOrFail($id);
 
-        return view('maestro.muebles.edit', compact('mueble'));
+        // Reutiliza la misma vista del disenador 3D, pasando el mueble
+        return view('maestro.muebles.create', compact('mueble'));
     }
 
     /**
-     * Actualiza el mueble existente en la base de datos.
+     * Actualiza el mueble existente desde el disenador 3D.
      */
     public function update(Request $request, $id)
     {
         $mueble = Mueble::where('user_id', auth()->id())->findOrFail($id);
 
         $request->validate([
-            'nombre'            => 'required|string|max:255',
-            'descripcion'       => 'required|string',
-            'parametros_diseno' => 'nullable|string',
-            'imagen'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'nombre'          => 'required|string|max:255',
+            'descripcion'     => 'nullable|string',
+            'material'        => 'nullable|string|max:255',
+            'precio'          => 'nullable|numeric|min:0',
+            'dimensiones'     => 'nullable|string|max:255',
+            'estructura_json' => 'nullable|string',
+            'imagen_base64'   => 'nullable|string',
         ]);
 
-        // Si se sube una nueva imagen, eliminamos la anterior y guardamos la nueva
-        if ($request->hasFile('imagen')) {
-            if ($mueble->imagen_url) {
-                Storage::disk('public')->delete($mueble->imagen_url);
+        // Guardar imagen base64 si viene del canvas 3D
+        if ($request->filled('imagen_base64')) {
+            $base64 = $request->input('imagen_base64');
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64, $type)) {
+                $imageData = base64_decode(substr($base64, strpos($base64, ',') + 1));
+                $ext       = strtolower($type[1]);
+                $filename  = 'muebles/' . uniqid() . '.' . $ext;
+                Storage::disk('public')->put($filename, $imageData);
+
+                // Eliminar imagen anterior si existia
+                if ($mueble->imagen_url) {
+                    Storage::disk('public')->delete($mueble->imagen_url);
+                }
+                $mueble->imagen_url = $filename;
             }
-            $mueble->imagen_url = $request->file('imagen')->store('muebles', 'public');
         }
 
         $mueble->update([
             'nombre'            => $request->nombre,
-            'descripcion'       => $request->descripcion,
-            'parametros_diseno' => $request->parametros_diseno,
+            'descripcion'       => $request->descripcion ?? $mueble->descripcion,
+            'material'          => $request->material ?? $mueble->material,
+            'precio'            => $request->precio ?? $mueble->precio,
+            'dimensiones'       => $request->dimensiones ?? $mueble->dimensiones,
+            'estructura_json'   => $request->estructura_json ?? $mueble->estructura_json,
             'imagen_url'        => $mueble->imagen_url,
         ]);
 
-        return redirect()->route('maestro.dashboard')->with('exito', '¡Mueble actualizado correctamente!');
+        return redirect()->route('maestro.dashboard')->with('exito', 'Mueble actualizado correctamente!');
     }
 
     /**

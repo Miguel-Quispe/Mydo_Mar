@@ -32,6 +32,20 @@ class RegisterController extends Controller
     protected $redirectTo = '/home';
 
     /**
+     * El usuario ha sido registrado exitosamente.
+     */
+    protected function registered($request, $user)
+    {
+        // Redirección según el rol_id del usuario
+        if ($user->rol_id == 1) {
+            return redirect()->route('maestro.dashboard')->with('success', true);
+        }
+
+        // Por defecto (rol_id = 2) manda al catálogo público
+        return redirect()->route('catalogo.index')->with('success', true);
+    }
+
+    /**
      * Obtener un validador para las peticiones de registro entrantes.
      *
      * @param  array  $data

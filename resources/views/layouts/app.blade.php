@@ -116,5 +116,194 @@
             @yield('content')
         </main>
     </div>
+
+    <!-- Modal de Notificación Centrado -->
+    <div id="notification-modal" class="d-none">
+        <div class="notification-content">
+            <div id="notification-icon"></div>
+            <div id="notification-message"></div>
+        </div>
+    </div>
+
+    <style>
+        #notification-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .notification-content {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: scaleIn 0.3s ease-in-out;
+        }
+
+        #notification-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 4;
+            stroke: #28a745;
+            stroke-miterlimit: 10;
+            animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
+        }
+
+        .checkmark circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: #28a745;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark path {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        .crossmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 4;
+            stroke: #dc3545;
+            stroke-miterlimit: 10;
+            animation: fillError 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
+        }
+
+        .crossmark circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: #dc3545;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .crossmark path {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: strokeCross 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        #notification-message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes strokeCross {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+
+        @keyframes fill {
+            100% { box-shadow: inset 0px 0px 0px 40px #28a745; }
+        }
+
+        @keyframes fillError {
+            100% { box-shadow: inset 0px 0px 0px 40px #dc3545; }
+        }
+    </style>
+
+    <script>
+        function showNotification(type, message) {
+            const modal = document.getElementById('notification-modal');
+            const icon = document.getElementById('notification-icon');
+            const msg = document.getElementById('notification-message');
+
+            modal.classList.remove('d-none');
+            msg.textContent = message;
+
+            if (type === 'success') {
+                icon.innerHTML = `
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle cx="26" cy="26" r="25" fill="none"/>
+                        <path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                `;
+            } else if (type === 'error') {
+                icon.innerHTML = `
+                    <svg class="crossmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle cx="26" cy="26" r="25" fill="none"/>
+                        <path fill="none" d="M16 16 L36 36 M36 16 L16 36"/>
+                    </svg>
+                `;
+            }
+
+            setTimeout(() => {
+                modal.classList.add('d-none');
+            }, 2000);
+        }
+
+        // Detectar si hay errores en el formulario de login
+        document.addEventListener('DOMContentLoaded', function() {
+            var showLoginError = {{ session('login_error') ? 'true' : 'false' }};
+            var showJustLoggedIn = {{ session('just_logged_in') ? 'true' : 'false' }};
+            var showRegisterSuccess = {{ session('success') ? 'true' : 'false' }};
+
+            if (showLoginError) {
+                setTimeout(function() {
+                    showNotification('error', 'Credenciales incorrectas');
+                }, 300);
+            }
+
+            if (showJustLoggedIn) {
+                setTimeout(function() {
+                    showNotification('success', '¡Sesión iniciada correctamente!');
+                }, 500);
+            }
+
+            if (showRegisterSuccess) {
+                setTimeout(function() {
+                    showNotification('success', '¡Registro exitoso!');
+                }, 300);
+            }
+        });
+    </script>
 </body>
 </html>

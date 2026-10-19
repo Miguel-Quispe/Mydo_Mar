@@ -133,7 +133,7 @@ function drawPreviewCanvas() {
         ctx.fillRect(offX, offY, esp, H * scale);        // lat izq
         ctx.fillRect(offX + W*scale - esp, offY, esp, H * scale); // lat der
         ctx.fillRect(offX, offY, W * scale, esp);        // techo
-        ctx.fillRect(offx, offY + H*scale - esp, W * scale, esp); // piso — typo fix below
+        ctx.fillRect(offX, offY + H*scale - esp, W * scale, esp); // piso
     }
 
     ctx.shadowBlur = 0;

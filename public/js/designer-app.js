@@ -232,6 +232,10 @@ function createPanel(w, h, d, x, y, z, name, addToScene = true) {
     return mesh;
 }
 
+function saveState() {
+    if (typeof pushHistory === 'function') pushHistory();
+}
+
 // ─── render3DFromParts — integración con engine.js ───────
 /**
  * Convierte el array Part[] del PolloEngine en un THREE.Group.
@@ -486,7 +490,7 @@ function checkCollisions(movedObject) {
         }
     }
     
-    if (movedObject.userData.edges) {
+    if (movedObject.userData.edges && movedObject.userData.edges.material && movedObject.userData.edges.material.color) {
         if (hasCollision) {
             movedObject.userData.edges.material.color.setHex(0xff0000);
         } else {
@@ -677,8 +681,7 @@ function updateDimensionInputs() {
         if (inpD) inpD.value = 0;
         if (lblW) lblW.innerHTML = `Grosor`;
         if (lblH) lblH.innerHTML = `Alto`;
-        if (lblD) lblD.innerHTML = `Ancho`;
-        if (drawerParamsContainer) drawerParamsContainer.style.display = 'none';
+        if (moduleParamsContainer) moduleParamsContainer.style.display = 'none';
         return;
     }
     
@@ -1119,135 +1122,238 @@ function clearAllObjects() {
     selectObject(null);
 }
 
+// --- Muebles de Ejemplo Simples ---
 window.cargarEjemploEscritorio = function() {
     clearAllObjects();
     const esp = 18;
     const W = 1200, H = 750, D = 600;
-    
-    // 2 Patas / Laterales
+
+    // 2 Laterales (Patas de panel)
     const legL = createPanel(esp, H - esp, D, -W/2 + esp/2, (H - esp)/2, 0, 'Lateral Izquierdo');
     legL.userData.pieceType = 'vertical';
+    applyMaterialToMesh(legL, 'roble');
+
     const legR = createPanel(esp, H - esp, D, W/2 - esp/2, (H - esp)/2, 0, 'Lateral Derecho');
     legR.userData.pieceType = 'vertical';
-    
-    // Tapa Superior
+    applyMaterialToMesh(legR, 'roble');
+
+    // Tapa Superior (Cubierta)
     const top = createPanel(W, esp, D, 0, H - esp/2, 0, 'Cubierta Superior');
     top.userData.pieceType = 'horizontal';
-    
-    // Faldón Trasero
-    const back = createPanel(W - 2*esp, 300, esp, 0, H - esp - 150, -D/2 + esp/2 + 50, 'Faldón');
-    back.userData.pieceType = 'vertical';
+    applyMaterialToMesh(top, 'roble');
 
-    camera.position.set(W * 0.9, H * 1.3, W * 1.2);
+    // Faldón Trasero (Estabilizador estructural)
+    const backH = 320;
+    const back = createPanel(W - 2*esp, backH, esp, 0, H - esp - backH/2, -D/2 + esp/2 + 40, 'Faldón Refuerzo');
+    back.userData.pieceType = 'vertical';
+    applyMaterialToMesh(back, 'roble');
+
+    // Repisa / Pasacables inferior
+    const repisa = createPanel(W - 2*esp, esp, 220, 0, 260, -D/2 + esp + 110 + 20, 'Repisa Inferior');
+    repisa.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(repisa, 'roble');
+
+    camera.position.set(W * 0.95, H * 1.35, W * 1.25);
     controls.target.set(0, H / 2, 0);
     controls.update();
+
     const inp = document.getElementById('project-name-input');
-    if (inp) inp.value = 'Escritorio Básico';
-    showToast('Escritorio cargado', '#27ae60');
+    if (inp) inp.value = 'Escritorio Básico Oficina';
+
+    selectObject(top);
+    saveState();
+    showToast('Escritorio cargado. Puedes editar sus piezas y medidas.', '#27ae60');
 };
 
 window.cargarEjemploEstanteria = function() {
     clearAllObjects();
     const esp = 18;
     const W = 600, H = 1200, D = 300;
-    
-    // Laterales
+
+    // Laterales exteriores
     const legL = createPanel(esp, H, D, -W/2 + esp/2, H/2, 0, 'Lateral Izquierdo');
     legL.userData.pieceType = 'vertical';
+    applyMaterialToMesh(legL, 'haya');
+
     const legR = createPanel(esp, H, D, W/2 - esp/2, H/2, 0, 'Lateral Derecho');
     legR.userData.pieceType = 'vertical';
-    
+    applyMaterialToMesh(legR, 'haya');
+
     // Base y Techo
     const base = createPanel(W - 2*esp, esp, D, 0, 70 + esp/2, 0, 'Base Inferior');
     base.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(base, 'haya');
+
     const top = createPanel(W - 2*esp, esp, D, 0, H - esp/2, 0, 'Techo Superior');
     top.userData.pieceType = 'horizontal';
-    
-    // Zócalo
-    const zocalo = createPanel(W - 2*esp, 70, esp, 0, 35, D/2 - esp/2 - 20, 'Zócalo');
-    zocalo.userData.pieceType = 'vertical';
-    
-    // 2 Repisas intermedias
-    const gap = (H - 70 - esp*3) / 3;
-    const repisa1 = createPanel(W - 2*esp, esp, D - 10, 0, 70 + esp + gap, -5, 'Repisa 1');
-    repisa1.userData.pieceType = 'horizontal';
-    const repisa2 = createPanel(W - 2*esp, esp, D - 10, 0, 70 + esp*2 + gap*2, -5, 'Repisa 2');
-    repisa2.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(top, 'haya');
 
-    camera.position.set(W * 1.5, H * 0.9, W * 2.0);
+    // Zócalo frontal
+    const zocalo = createPanel(W - 2*esp, 70, esp, 0, 35, D/2 - esp/2 - 15, 'Zócalo Frontal');
+    zocalo.userData.pieceType = 'vertical';
+    applyMaterialToMesh(zocalo, 'haya');
+
+    // Fondo Trasero (melamina/MDF para rigidez)
+    const fondoH = H - 70 - esp;
+    const fondo = createPanel(W - 2*esp, fondoH, esp, 0, 70 + esp + fondoH/2, -D/2 + esp/2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical';
+    applyMaterialToMesh(fondo, 'blanca');
+
+    // 3 Repisas Intermedias (4 compartimentos de almacenamiento)
+    const espacioUtil = H - 70 - 2*esp;
+    const gap = (espacioUtil - 3*esp) / 4;
+    for (let i = 1; i <= 3; i++) {
+        const yPos = 70 + esp + (gap + esp)*i - esp/2;
+        const rep = createPanel(W - 2*esp, esp, D - esp - 5, 0, yPos, esp/2 - 2.5, `Repisa ${i}`);
+        rep.userData.pieceType = 'horizontal';
+        applyMaterialToMesh(rep, 'haya');
+    }
+
+    camera.position.set(W * 1.4, H * 0.85, W * 1.9);
     controls.target.set(0, H / 2, 0);
     controls.update();
+
     const inp = document.getElementById('project-name-input');
-    if (inp) inp.value = 'Estantería 3 Repisas';
-    showToast('Estantería cargada', '#27ae60');
+    if (inp) inp.value = 'Estantería 4 Niveles';
+
+    selectObject(top);
+    saveState();
+    showToast('Estanteria cargada. Lista para personalizar.', '#27ae60');
 };
 
 window.cargarEjemploGabinete = function() {
     clearAllObjects();
     const esp = 18;
     const W = 1000, H = 550, D = 400;
-    
-    // Laterales
-    const legL = createPanel(esp, H - esp, D, -W/2 + esp/2, (H - esp)/2, 0, 'Lateral Izquierdo');
-    legL.userData.pieceType = 'vertical';
-    const legR = createPanel(esp, H - esp, D, W/2 - esp/2, (H - esp)/2, 0, 'Lateral Derecho');
-    legR.userData.pieceType = 'vertical';
-    
-    // Base y Cubierta
-    const base = createPanel(W - 2*esp, esp, D, 0, esp/2, 0, 'Base Inferior');
+
+    // Base inferior sobre zócalo
+    const zocaloH = 60;
+    const base = createPanel(W - 2*esp, esp, D, 0, zocaloH + esp/2, 0, 'Base Inferior');
     base.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(base, 'nogal');
+
+    // Zócalo frontal
+    const zocalo = createPanel(W - 2*esp, zocaloH, esp, 0, zocaloH/2, D/2 - esp/2 - 20, 'Zócalo Frontal');
+    zocalo.userData.pieceType = 'vertical';
+    applyMaterialToMesh(zocalo, 'nogal');
+
+    // Cubierta Superior
     const top = createPanel(W, esp, D, 0, H - esp/2, 0, 'Cubierta Superior');
     top.userData.pieceType = 'horizontal';
-    
-    // División central
-    const divH = H - esp*2;
-    const centerDiv = createPanel(esp, divH, D - 10, 0, esp + divH/2, -5, 'División Central');
-    centerDiv.userData.pieceType = 'vertical';
-    
-    // Repisas
-    const repW = (W - 3*esp) / 2;
-    const repL = createPanel(repW, esp, D - 15, -W/4, H/2, -7.5, 'Repisa Izq');
-    repL.userData.pieceType = 'horizontal';
-    const repR = createPanel(repW, esp, D - 15, W/4, H/2, -7.5, 'Repisa Der');
-    repR.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(top, 'nogal');
 
-    camera.position.set(W * 1.1, H * 1.3, W * 1.3);
+    // Laterales
+    const latH = H - esp;
+    const legL = createPanel(esp, latH, D, -W/2 + esp/2, latH/2, 0, 'Lateral Izquierdo');
+    legL.userData.pieceType = 'vertical';
+    applyMaterialToMesh(legL, 'nogal');
+
+    const legR = createPanel(esp, latH, D, W/2 - esp/2, latH/2, 0, 'Lateral Derecho');
+    legR.userData.pieceType = 'vertical';
+    applyMaterialToMesh(legR, 'nogal');
+
+    // División Central interior
+    const intH = H - esp - (zocaloH + esp);
+    const centerDiv = createPanel(esp, intH, D - 20, 0, (zocaloH + esp) + intH/2, -10, 'División Central');
+    centerDiv.userData.pieceType = 'vertical';
+    applyMaterialToMesh(centerDiv, 'nogal');
+
+    // Fondo Trasero
+    const fondo = createPanel(W - 2*esp, intH, esp, 0, (zocaloH + esp) + intH/2, -D/2 + esp/2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical';
+    applyMaterialToMesh(fondo, 'nogal');
+
+    // Repisas intermedias (Izquierda y Derecha)
+    const compW = (W - 3*esp) / 2;
+    const repL = createPanel(compW, esp, D - 30, -W/4 + esp/4, (zocaloH + esp) + intH/2, -10, 'Repisa Izquierda');
+    repL.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(repL, 'nogal');
+
+    const repR = createPanel(compW, esp, D - 30, W/4 - esp/4, (zocaloH + esp) + intH/2, -10, 'Repisa Derecha');
+    repR.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(repR, 'nogal');
+
+    camera.position.set(W * 1.15, H * 1.3, W * 1.35);
     controls.target.set(0, H / 2, 0);
     controls.update();
+
     const inp = document.getElementById('project-name-input');
-    if (inp) inp.value = 'Gabinete TV Bajo';
-    showToast('Gabinete cargado', '#27ae60');
+    if (inp) inp.value = 'Gabinete TV Bajo Moderno';
+
+    selectObject(top);
+    saveState();
+    showToast('Gabinete TV cargado. Edita sus divisiones o acabados.', '#27ae60');
 };
 
 window.cargarEjemploMesa = function() {
     clearAllObjects();
     const esp = 18;
     const W = 800, H = 450, D = 500;
-    
-    // Tablero
+
+    // Tablero Superior
     const top = createPanel(W, esp, D, 0, H - esp/2, 0, 'Tablero Mesa');
     top.userData.pieceType = 'horizontal';
-    
-    // 4 Patas
-    const legSize = 40;
+    applyMaterialToMesh(top, 'roble');
+
+    // 4 Patas cuadradas
+    const legSize = 45;
     const legH = H - esp;
-    const offX = W/2 - legSize/2 - 20;
-    const offZ = D/2 - legSize/2 - 20;
+    const offX = W/2 - legSize/2 - 15;
+    const offZ = D/2 - legSize/2 - 15;
+
     const p1 = createPanel(legSize, legH, legSize, -offX, legH/2, -offZ, 'Pata 1');
     p1.userData.pieceType = 'vertical';
+    applyMaterialToMesh(p1, 'roble');
+
     const p2 = createPanel(legSize, legH, legSize, offX, legH/2, -offZ, 'Pata 2');
     p2.userData.pieceType = 'vertical';
+    applyMaterialToMesh(p2, 'roble');
+
     const p3 = createPanel(legSize, legH, legSize, -offX, legH/2, offZ, 'Pata 3');
     p3.userData.pieceType = 'vertical';
+    applyMaterialToMesh(p3, 'roble');
+
     const p4 = createPanel(legSize, legH, legSize, offX, legH/2, offZ, 'Pata 4');
     p4.userData.pieceType = 'vertical';
+    applyMaterialToMesh(p4, 'roble');
 
-    camera.position.set(W * 1.2, H * 1.4, W * 1.4);
+    // Faldones de amarre perimetral bajo la tapa
+    const faldH = 65;
+    const faldW = W - 2*legSize - 30;
+    const faldD = D - 2*legSize - 30;
+
+    const faldonFront = createPanel(faldW, faldH, esp, 0, H - esp - faldH/2, offZ - legSize/2 + esp/2, 'Faldón Frontal');
+    faldonFront.userData.pieceType = 'vertical';
+    applyMaterialToMesh(faldonFront, 'roble');
+
+    const faldonBack = createPanel(faldW, faldH, esp, 0, H - esp - faldH/2, -offZ + legSize/2 - esp/2, 'Faldón Trasero');
+    faldonBack.userData.pieceType = 'vertical';
+    applyMaterialToMesh(faldonBack, 'roble');
+
+    const faldonIzq = createPanel(esp, faldH, faldD, -offX + legSize/2 - esp/2, H - esp - faldH/2, 0, 'Faldón Izquierdo');
+    faldonIzq.userData.pieceType = 'vertical';
+    applyMaterialToMesh(faldonIzq, 'roble');
+
+    const faldonDer = createPanel(esp, faldH, faldD, offX - legSize/2 + esp/2, H - esp - faldH/2, 0, 'Faldón Derecho');
+    faldonDer.userData.pieceType = 'vertical';
+    applyMaterialToMesh(faldonDer, 'roble');
+
+    // Revistero inferior
+    const revH = 110;
+    const revistero = createPanel(W - 2*legSize - 10, esp, D - 2*legSize - 10, 0, revH + esp/2, 0, 'Revistero Inferior');
+    revistero.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(revistero, 'blanca');
+
+    camera.position.set(W * 1.25, H * 1.45, W * 1.45);
     controls.target.set(0, H / 2, 0);
     controls.update();
+
     const inp = document.getElementById('project-name-input');
-    if (inp) inp.value = 'Mesa de Centro';
-    showToast('Mesa de centro cargada', '#27ae60');
+    if (inp) inp.value = 'Mesa de Centro con Revistero';
+
+    selectObject(top);
+    saveState();
+    showToast('Mesa de centro cargada. Lista para editar.', '#27ae60');
 };
 
 document.getElementById('btn-ejemplo-escritorio')?.addEventListener('click', (e) => { e?.preventDefault?.(); window.cargarEjemploEscritorio(); });
@@ -1262,7 +1368,6 @@ document.getElementById('btn-add-cajon-param')?.addEventListener('click', (e) =>
     e.preventDefault();
     spawnParametricDrawer();
 });
-document.getElementById('btn-escritorio')?.addEventListener('click', (e) => { e?.preventDefault?.(); window.cargarEjemploEscritorio(); });
 
 let roomGroup = null;
 document.getElementById('btn-habitacion').addEventListener('click', function() {
@@ -1925,44 +2030,61 @@ window.cargarEjemploGabinetePuertaConBisagras = function() {
     clearAllObjects();
     const esp = 18;
     const W = 600, H = 800, D = 350;
-    const finishSave = currentHardwareFinish;
+    const finishSave = typeof currentHardwareFinish !== 'undefined' ? currentHardwareFinish : 'chrome';
 
     // Cuerpo del gabinete
     const latL = createPanel(esp, H, D, -W / 2 + esp / 2, H / 2, 0, 'Lateral Izquierdo');
     latL.userData.pieceType = 'vertical';
+    applyMaterialToMesh(latL, 'roble');
+
     const latR = createPanel(esp, H, D, W / 2 - esp / 2, H / 2, 0, 'Lateral Derecho');
     latR.userData.pieceType = 'vertical';
-    const base = createPanel(W - esp * 2, esp, D, 0, esp / 2, 0, 'Base');
-    base.userData.pieceType = 'horizontal';
-    const techo = createPanel(W, esp, D, 0, H - esp / 2, 0, 'Techo');
-    techo.userData.pieceType = 'horizontal';
-    const fondo = createPanel(W - esp * 2, H - esp * 2, esp, 0, H / 2, -D / 2 + esp / 2, 'Fondo');
-    fondo.userData.pieceType = 'vertical';
+    applyMaterialToMesh(latR, 'roble');
 
-    // Puerta frontal (18mm de espesor, casi todo el ancho, casi todo el alto)
-    const doorW = W - esp * 2 - 4;  // -4mm de huelgo
+    const base = createPanel(W - esp * 2, esp, D, 0, esp / 2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(base, 'roble');
+
+    const techo = createPanel(W, esp, D, 0, H - esp / 2, 0, 'Techo Superior');
+    techo.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(techo, 'roble');
+
+    const fondo = createPanel(W - esp * 2, H - esp * 2, esp, 0, H / 2, -D / 2 + esp / 2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical';
+    applyMaterialToMesh(fondo, 'blanca');
+
+    // Repisa intermedia interior
+    const repisa = createPanel(W - esp * 2, esp, D - esp - 15, 0, H / 2, esp / 2 - 7.5, 'Repisa Central');
+    repisa.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(repisa, 'roble');
+
+    // Puerta frontal (huelgo 2mm por lado)
+    const doorW = W - esp * 2 - 4;
     const doorH = H - esp * 2 - 4;
     const door = createPanel(doorW, doorH, esp, 0, H / 2, D / 2 + esp / 2 + 2, 'Puerta Frontal');
     door.userData.pieceType = 'vertical';
-    applyMaterialToMesh(door, 'roble');
+    applyMaterialToMesh(door, 'nogal');
 
-    // Colocar bisagras en la puerta (bisagras lado izquierdo)
+    // Colocar bisagras en la puerta
     attachHingesToPiece(door, finishSave);
 
-    // Jalador en borde derecho de la puerta
+    // Jalador de barra en borde derecho de la puerta
     const barH = createBarHandle(finishSave);
     barH.rotation.z = Math.PI / 2;
-    barH.position.set(doorW / 2 - 50, 0, esp / 2 + 25);
+    barH.position.set(doorW / 2 - 45, 0, esp / 2 + 20);
     barH.scale.setScalar(0.9);
     door.add(barH);
 
-    // Camara
-    camera.position.set(W * 1.4, H * 0.9, W * 1.8);
+    camera.position.set(W * 1.35, H * 0.95, W * 1.85);
     controls.target.set(0, H / 2, 0);
     controls.update();
+
     const inp = document.getElementById('project-name-input');
-    if (inp) inp.value = 'Gabinete con Puerta';
-    showToast('Gabinete + Puerta + Bisagras cargado', '#27ae60');
+    if (inp) inp.value = 'Gabinete con Puerta y Bisagras';
+
+    selectObject(door);
+    saveState();
+    showToast('Gabinete con puerta y herrajes cargado. Listo para editar.', '#27ae60');
 };
 
 // ─── Plantilla: Módulo con Cajón y Rieles Telescópicos ─────────
@@ -1970,67 +2092,59 @@ window.cargarEjemploModuloCajonConRieles = function() {
     clearAllObjects();
     const esp = 18;
     const W = 600, H = 350, D = 500;
-    const finishSave = currentHardwareFinish;
+    const finishSave = typeof currentHardwareFinish !== 'undefined' ? currentHardwareFinish : 'chrome';
 
     // 1. Cuerpo del Gabinete
     const latL = createPanel(esp, H, D, -W / 2 + esp / 2, H / 2, 0, 'Lateral Izquierdo');
+    latL.userData.pieceType = 'vertical';
+    applyMaterialToMesh(latL, 'roble');
+
     const latR = createPanel(esp, H, D, W / 2 - esp / 2, H / 2, 0, 'Lateral Derecho');
-    const base = createPanel(W - esp * 2, esp, D, 0, esp / 2, 0, 'Base');
-    const techo = createPanel(W, esp, D, 0, H - esp / 2, 0, 'Techo');
-    const fondo = createPanel(W - esp * 2, H - esp * 2, esp, 0, H / 2, -D / 2 + esp / 2, 'Fondo');
+    latR.userData.pieceType = 'vertical';
+    applyMaterialToMesh(latR, 'roble');
 
-    // 2. Piezas del Cajón (Dummy initial sizes, updateDrawerGroup will resize and position them)
-    const frente = createPanel(10, 10, esp, 0, 0, 0, 'Frente Decorativo');
-    applyMaterialToMesh(frente, 'nogal');
+    const base = createPanel(W - esp * 2, esp, D, 0, esp / 2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(base, 'roble');
 
-    const cf = createPanel(10, 10, esp, 0, 0, 0, 'Contra Frente');
-    const trasera = createPanel(10, 10, esp, 0, 0, 0, 'Trasera Cajón');
-    const latCajonL = createPanel(esp, 10, 10, 0, 0, 0, 'Lat Cajón Izq');
-    const latCajonR = createPanel(esp, 10, 10, 0, 0, 0, 'Lat Cajón Der');
-    
-    const fondoCajon = createPanel(10, esp, 10, 0, 0, 0, 'Fondo Cajón');
-    applyMaterialToMesh(fondoCajon, 'blanca');
+    const techo = createPanel(W, esp, D, 0, H - esp / 2, 0, 'Techo Superior');
+    techo.userData.pieceType = 'horizontal';
+    applyMaterialToMesh(techo, 'roble');
 
-    const knob = createKnobHandle(finishSave);
+    const fondo = createPanel(W - esp * 2, H - esp * 2, esp, 0, H / 2, -D / 2 + esp / 2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical';
+    applyMaterialToMesh(fondo, 'blanca');
 
-    // Agrupar todo el cajón
+    // 2. Cajón Paramétrico con rieles
     const cajonGroup = new THREE.Group();
     cajonGroup.userData.isParametricGroup = true;
     cajonGroup.userData.name = 'Cajón Armado';
-    
-    // Parametric properties
     cajonGroup.userData.w = W;
     cajonGroup.userData.h = H;
     cajonGroup.userData.d = D;
     cajonGroup.userData.esp = esp;
-    
-    // User requested defaults
-    cajonGroup.userData.drawerInnerH = 150; // 15cm
-    cajonGroup.userData.drawerFrontType = 'externo'; // Overlay
-    cajonGroup.userData.drawerOverlap = 10; // 1cm solape
+    cajonGroup.userData.drawerInnerH = 150;
+    cajonGroup.userData.drawerQty = 1;
+    cajonGroup.userData.drawerFrontType = 'externo';
+    cajonGroup.userData.drawerOverlap = 10;
     cajonGroup.userData.drawerBoxDepth = 450;
+    cajonGroup.userData.textureKey = 'nogal';
 
-    [frente, cf, trasera, latCajonL, latCajonR, fondoCajon].forEach(p => {
-        scene.remove(p);
-        const idx = objects.indexOf(p);
-        if(idx > -1) objects.splice(idx, 1);
-        cajonGroup.add(p);
-    });
-    cajonGroup.add(knob); // Knob wasn't in scene/objects initially
-    
+    updateDrawerGroup(cajonGroup, W, H, D, esp);
+
     scene.add(cajonGroup);
     objects.push(cajonGroup);
 
-    // 3. Ejecutar redimensionamiento paramétrico (posicionará, escalará y añadirá rieles)
-    updateDrawerGroup(cajonGroup, W, H, D, esp);
-
-    // Cámara
     camera.position.set(W * 1.3, H * 1.5, W * 1.6);
     controls.target.set(0, H / 2, 0);
     controls.update();
+
     const inp = document.getElementById('project-name-input');
-    if (inp) inp.value = 'Modulo Cajon con Rieles';
-    showToast('Modulo Cajon Parametrico cargado', '#27ae60');
+    if (inp) inp.value = 'Módulo Cajón con Rieles';
+
+    selectObject(cajonGroup);
+    saveState();
+    showToast('Modulo cajon con correderas cargado. Listo para editar.', '#27ae60');
 };
 
 // Wiring de los botones de biblioteca (herrajes)
@@ -2949,6 +3063,60 @@ window.getExportData = function() {
     };
 };
 
+// ─── cargarDesdeJSON: reconstruye la escena desde un JSON guardado ───────────
+window.cargarDesdeJSON = function(data) {
+    if (!data || !data.objetos || !Array.isArray(data.objetos) || data.objetos.length === 0) {
+        console.warn('cargarDesdeJSON: JSON vacio o sin objetos.');
+        return;
+    }
+
+    clearAllObjects();
+
+    data.objetos.forEach(function(obj) {
+        const w = obj.w || 18;
+        const h = obj.h || 500;
+        const d = obj.d || 500;
+        const px = (obj.pos && obj.pos[0] != null) ? obj.pos[0] : 0;
+        const py = (obj.pos && obj.pos[1] != null) ? obj.pos[1] : h / 2;
+        const pz = (obj.pos && obj.pos[2] != null) ? obj.pos[2] : 0;
+        const rx = (obj.rot && obj.rot[0] != null) ? obj.rot[0] : 0;
+        const ry = (obj.rot && obj.rot[1] != null) ? obj.rot[1] : 0;
+        const rz = (obj.rot && obj.rot[2] != null) ? obj.rot[2] : 0;
+        const texKey = obj.textureKey || 'roble';
+        const name   = obj.name || 'Pieza';
+        const pType  = obj.pieceType || 'vertical';
+
+        const mesh = createPanel(w, h, d, px, py, pz, name, false);
+        mesh.rotation.set(rx, ry, rz);
+        mesh.userData.pieceType = pType;
+        applyMaterialToMesh(mesh, texKey);
+
+        scene.add(mesh);
+        objects.push(mesh);
+    });
+
+    // Enfocar la camara en el mueble reconstruido
+    if (objects.length > 0) {
+        const box = new THREE.Box3();
+        objects.forEach(function(o) { box.expandByObject(o); });
+        const size   = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        box.getSize(size);
+        box.getCenter(center);
+        camera.position.set(
+            center.x + size.x * 1.3,
+            center.y + size.y * 1.4,
+            center.z + size.z * 1.6
+        );
+        controls.target.copy(center);
+        controls.update();
+    }
+
+    selectObject(objects[0] || null);
+    saveState();
+    showToast('Disenio cargado. Puedes editarlo y guardar los cambios.', '#27ae60');
+};
+
 window.imprimirHojaTaller = function() {
     const projectName = document.getElementById('project-name-input')?.value?.trim() || 'Mydo Mar';
     const pieces = extractPiecesFromScene();
@@ -3037,4 +3205,353 @@ window.imprimirHojaTaller = function() {
         </html>
     `);
     win.document.close();
+};
+
+// === MUEBLES PERSONALIZADOS POR MAESTRO ===
+
+// Muebles de Carlos
+window.carlosMueble1 = function() {
+    clearAllObjects();
+    const esp = 18, W = 1400, H = 750, D = 700;
+
+    const legL = createPanel(esp, H-esp, D, -W/2+esp/2, (H-esp)/2, 0, 'Lateral Izquierdo');
+    legL.userData.pieceType = 'vertical'; applyMaterialToMesh(legL, 'nogal');
+
+    const legR = createPanel(esp, H-esp, D, W/2-esp/2, (H-esp)/2, 0, 'Lateral Derecho');
+    legR.userData.pieceType = 'vertical'; applyMaterialToMesh(legR, 'nogal');
+
+    const top = createPanel(W, esp, D, 0, H-esp/2, 0, 'Cubierta Superior');
+    top.userData.pieceType = 'horizontal'; applyMaterialToMesh(top, 'nogal');
+
+    const back = createPanel(W-2*esp, 350, esp, 0, H-esp-175, -D/2+esp/2+50, 'Faldon Refuerzo');
+    back.userData.pieceType = 'vertical'; applyMaterialToMesh(back, 'nogal');
+
+    const rep = createPanel(W-2*esp, esp, 300, 0, 280, -D/2+esp+150, 'Repisa Inferior');
+    rep.userData.pieceType = 'horizontal'; applyMaterialToMesh(rep, 'nogal');
+
+    camera.position.set(W*0.9, H*1.3, W*1.2);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Escritorio Ejecutivo Grande';
+    selectObject(top); saveState();
+    showToast('Escritorio ejecutivo cargado', '#27ae60');
+};
+
+window.carlosMueble2 = function() {
+    clearAllObjects();
+    const esp = 18, W = 900, H = 1800, D = 400;
+
+    const legL = createPanel(esp, H, D, -W/2+esp/2, H/2, 0, 'Lateral Izquierdo');
+    legL.userData.pieceType = 'vertical'; applyMaterialToMesh(legL, 'roble');
+
+    const legR = createPanel(esp, H, D, W/2-esp/2, H/2, 0, 'Lateral Derecho');
+    legR.userData.pieceType = 'vertical'; applyMaterialToMesh(legR, 'roble');
+
+    const base = createPanel(W-2*esp, esp, D, 0, 70+esp/2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal'; applyMaterialToMesh(base, 'roble');
+
+    const top = createPanel(W-2*esp, esp, D, 0, H-esp/2, 0, 'Techo Superior');
+    top.userData.pieceType = 'horizontal'; applyMaterialToMesh(top, 'roble');
+
+    const zocalo = createPanel(W-2*esp, 70, esp, 0, 35, D/2-esp/2-15, 'Zocalo Frontal');
+    zocalo.userData.pieceType = 'vertical'; applyMaterialToMesh(zocalo, 'roble');
+
+    const fondoH = H-70-esp;
+    const fondo = createPanel(W-2*esp, fondoH, esp, 0, 70+esp+fondoH/2, -D/2+esp/2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical'; applyMaterialToMesh(fondo, 'blanca');
+
+    const gap = (H-70-2*esp-5*esp) / 6;
+    for (let i = 1; i <= 5; i++) {
+        const yPos = 70+esp+(gap+esp)*i-esp/2;
+        const rep = createPanel(W-2*esp, esp, D-esp-5, 0, yPos, esp/2-2.5, 'Repisa '+i);
+        rep.userData.pieceType = 'horizontal'; applyMaterialToMesh(rep, 'roble');
+    }
+
+    camera.position.set(W*1.4, H*0.85, W*1.9);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Librero Alto 6 Niveles';
+    selectObject(top); saveState();
+    showToast('Librero alto cargado', '#27ae60');
+};
+
+// Muebles de Maria
+window.mariaMueble1 = function() {
+    clearAllObjects();
+    const esp = 18, W = 800, H = 700, D = 350;
+
+    const latIzq = createPanel(esp, H, D, -W/2+esp/2, H/2, 0, 'Lateral Izquierdo');
+    latIzq.userData.pieceType = 'vertical'; applyMaterialToMesh(latIzq, 'blanca');
+
+    const latDer = createPanel(esp, H, D, W/2-esp/2, H/2, 0, 'Lateral Derecho');
+    latDer.userData.pieceType = 'vertical'; applyMaterialToMesh(latDer, 'blanca');
+
+    const base = createPanel(W-2*esp, esp, D, 0, esp/2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal'; applyMaterialToMesh(base, 'blanca');
+
+    const techo = createPanel(W-2*esp, esp, D, 0, H-esp/2, 0, 'Techo Superior');
+    techo.userData.pieceType = 'horizontal'; applyMaterialToMesh(techo, 'blanca');
+
+    const fondo = createPanel(W-2*esp, H-2*esp, esp, 0, H/2, -D/2+esp/2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical'; applyMaterialToMesh(fondo, 'blanca');
+
+    const rep = createPanel(W-2*esp, esp, D-20, 0, H/2, 10, 'Repisa Central');
+    rep.userData.pieceType = 'horizontal'; applyMaterialToMesh(rep, 'blanca');
+
+    const pW = (W-6)/2, pH = H-4;
+    const pIzq = createPanel(pW, pH, esp, -pW/2-1, H/2, D/2+esp/2, 'Puerta Izquierda');
+    pIzq.userData.pieceType = 'vertical'; applyMaterialToMesh(pIzq, 'haya');
+
+    const pDer = createPanel(pW, pH, esp, pW/2+1, H/2, D/2+esp/2, 'Puerta Derecha');
+    pDer.userData.pieceType = 'vertical'; applyMaterialToMesh(pDer, 'haya');
+
+    camera.position.set(W*1.3, H*1.2, W*1.5);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Alacena Cocina 2 Puertas';
+    selectObject(techo); saveState();
+    showToast('Alacena cargada exitosamente', '#27ae60');
+};
+
+window.mariaMueble2 = function() {
+    clearAllObjects();
+    const esp = 18, W = 1000, H = 550, D = 400;
+
+    const base = createPanel(W-2*esp, esp, D, 0, 60+esp/2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal'; applyMaterialToMesh(base, 'grafito');
+
+    const zocalo = createPanel(W-2*esp, 60, esp, 0, 30, D/2-esp/2-20, 'Zocalo Frontal');
+    zocalo.userData.pieceType = 'vertical'; applyMaterialToMesh(zocalo, 'grafito');
+
+    const top = createPanel(W, esp, D, 0, H-esp/2, 0, 'Cubierta Superior');
+    top.userData.pieceType = 'horizontal'; applyMaterialToMesh(top, 'grafito');
+
+    const latL = createPanel(esp, H-esp, D, -W/2+esp/2, (H-esp)/2, 0, 'Lateral Izquierdo');
+    latL.userData.pieceType = 'vertical'; applyMaterialToMesh(latL, 'grafito');
+
+    const latR = createPanel(esp, H-esp, D, W/2-esp/2, (H-esp)/2, 0, 'Lateral Derecho');
+    latR.userData.pieceType = 'vertical'; applyMaterialToMesh(latR, 'grafito');
+
+    const divH = H-esp*2;
+    const centerDiv = createPanel(esp, divH, D-10, 0, esp+divH/2, -5, 'División Central');
+    centerDiv.userData.pieceType = 'vertical'; applyMaterialToMesh(centerDiv, 'grafito');
+
+    const repW = (W-3*esp)/2;
+    const repL = createPanel(repW, esp, D-15, -W/4, H/2, -7.5, 'Repisa Izq');
+    repL.userData.pieceType = 'horizontal'; applyMaterialToMesh(repL, 'grafito');
+    const repR = createPanel(repW, esp, D-15, W/4, H/2, -7.5, 'Repisa Der');
+    repR.userData.pieceType = 'horizontal'; applyMaterialToMesh(repR, 'grafito');
+
+    camera.position.set(W*1.1, H*1.3, W*1.3);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Mueble TV Bajo Moderno';
+    selectObject(top); saveState();
+    showToast('Mueble TV cargado', '#27ae60');
+};
+
+// Muebles de Juan
+window.juanMueble1 = function() {
+    clearAllObjects();
+    const esp = 18, W = 600, H = 800, D = 350;
+    const finishSave = currentHardwareFinish;
+
+    const latL = createPanel(esp, H, D, -W/2+esp/2, H/2, 0, 'Lateral Izquierdo');
+    latL.userData.pieceType = 'vertical'; applyMaterialToMesh(latL, 'marmol');
+
+    const latR = createPanel(esp, H, D, W/2-esp/2, H/2, 0, 'Lateral Derecho');
+    latR.userData.pieceType = 'vertical'; applyMaterialToMesh(latR, 'marmol');
+
+    const base = createPanel(W-esp*2, esp, D, 0, esp/2, 0, 'Base');
+    base.userData.pieceType = 'horizontal'; applyMaterialToMesh(base, 'marmol');
+
+    const techo = createPanel(W, esp, D, 0, H-esp/2, 0, 'Techo');
+    techo.userData.pieceType = 'horizontal'; applyMaterialToMesh(techo, 'marmol');
+
+    const fondo = createPanel(W-esp*2, H-esp*2, esp, 0, H/2, -D/2+esp/2, 'Fondo');
+    fondo.userData.pieceType = 'vertical'; applyMaterialToMesh(fondo, 'blanca');
+
+    const doorW = W-esp*2-4;
+    const doorH = H-esp*2-4;
+    const door = createPanel(doorW, doorH, esp, 0, H/2, D/2+esp/2+2, 'Puerta Frontal');
+    door.userData.pieceType = 'vertical'; applyMaterialToMesh(door, 'marmol');
+
+    attachHingesToPiece(door, finishSave);
+
+    const barH = createBarHandle(finishSave);
+    barH.rotation.z = Math.PI/2;
+    barH.position.set(doorW/2-50, 0, esp/2+25);
+    barH.scale.setScalar(0.9);
+    door.add(barH);
+
+    camera.position.set(W*1.4, H*0.9, W*1.8);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Armario de Pared Premium';
+    selectObject(techo); saveState();
+    showToast('Armario premium cargado', '#27ae60');
+};
+
+window.juanMueble2 = function() {
+    clearAllObjects();
+    const esp = 18, W = 400, H = 450, D = 450;
+
+    const latL = createPanel(esp, H-esp, D, -W/2+esp/2, (H-esp)/2, 0, 'Lateral Izquierdo');
+    latL.userData.pieceType = 'vertical'; applyMaterialToMesh(latL, 'roble');
+
+    const latR = createPanel(esp, H-esp, D, W/2-esp/2, (H-esp)/2, 0, 'Lateral Derecho');
+    latR.userData.pieceType = 'vertical'; applyMaterialToMesh(latR, 'roble');
+
+    const base = createPanel(W-esp*2, esp, D, 0, esp/2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal'; applyMaterialToMesh(base, 'roble');
+
+    const techo = createPanel(W, esp, D, 0, H-esp/2, 0, 'Cubierta Superior');
+    techo.userData.pieceType = 'horizontal'; applyMaterialToMesh(techo, 'roble');
+
+    const fondo = createPanel(W-esp*2, H-esp*2, esp, 0, H/2, -D/2+esp/2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical'; applyMaterialToMesh(fondo, 'blanca');
+
+    const cajonH = 150;
+    const frente = createPanel(W-esp*2-4, cajonH, esp, 0, H-esp-cajonH/2-2, D/2+esp/2+2, 'Frente Cajon');
+    frente.userData.pieceType = 'vertical'; applyMaterialToMesh(frente, 'roble');
+
+    const knob = createKnob(finishSave);
+    knob.position.set(0, 0, esp/2+25);
+    frente.add(knob);
+
+    camera.position.set(W*1.5, H*1.2, W*1.7);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Mesa de Noche Cajon';
+    selectObject(techo); saveState();
+    showToast('Mesa de noche cargada', '#27ae60');
+};
+
+// Muebles de Ana
+window.anaMueble1 = function() {
+    clearAllObjects();
+    const esp = 18, W = 1200, H = 450, D = 500;
+    const ls = 50, lH = H-esp;
+    const offX = W/2-ls/2-20, offZ = D/2-ls/2-20;
+
+    const top = createPanel(W, esp, D, 0, H-esp/2, 0, 'Tablero Mesa');
+    top.userData.pieceType = 'horizontal'; applyMaterialToMesh(top, 'haya');
+
+    [[-offX,-offZ,'Pata 1'],[offX,-offZ,'Pata 2'],
+     [-offX, offZ,'Pata 3'],[offX, offZ,'Pata 4']].forEach(([px,pz,n]) => {
+        const p = createPanel(ls, lH, ls, px, lH/2, pz, n);
+        p.userData.pieceType = 'vertical'; applyMaterialToMesh(p, 'haya');
+    });
+
+    const fH = 70, fW = W-2*ls-40, fD = D-2*ls-40;
+    [[fW,fH,esp,0,H-esp-fH/2, offZ-ls/2+esp/2,'Faldon Frontal'],
+     [fW,fH,esp,0,H-esp-fH/2,-offZ+ls/2-esp/2,'Faldon Trasero'],
+     [esp,fH,fD,-offX+ls/2-esp/2,H-esp-fH/2,0,'Faldon Izquierdo'],
+     [esp,fH,fD, offX-ls/2+esp/2,H-esp-fH/2,0,'Faldon Derecho']].forEach(([w,h,d,x,y,z,n]) => {
+        const f = createPanel(w,h,d,x,y,z,n);
+        f.userData.pieceType = 'vertical'; applyMaterialToMesh(f, 'haya');
+    });
+
+    camera.position.set(W*1.25, H*1.45, W*1.45);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Mesa de Comedor Familiar';
+    selectObject(top); saveState();
+    showToast('Mesa de comedor cargada', '#27ae60');
+};
+
+window.anaMueble2 = function() {
+    clearAllObjects();
+    const esp = 18, W = 500, H = 900, D = 400;
+
+    const latL = createPanel(esp, H, D, -W/2+esp/2, H/2, 0, 'Lateral Izquierdo');
+    latL.userData.pieceType = 'vertical'; applyMaterialToMesh(latL, 'blanca');
+
+    const latR = createPanel(esp, H, D, W/2-esp/2, H/2, 0, 'Lateral Derecho');
+    latR.userData.pieceType = 'vertical'; applyMaterialToMesh(latR, 'blanca');
+
+    const base = createPanel(W-2*esp, esp, D, 0, 70+esp/2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal'; applyMaterialToMesh(base, 'blanca');
+
+    const top = createPanel(W-2*esp, esp, D, 0, H-esp/2, 0, 'Techo Superior');
+    top.userData.pieceType = 'horizontal'; applyMaterialToMesh(top, 'blanca');
+
+    const zocalo = createPanel(W-2*esp, 70, esp, 0, 35, D/2-esp/2-15, 'Zocalo Frontal');
+    zocalo.userData.pieceType = 'vertical'; applyMaterialToMesh(zocalo, 'blanca');
+
+    const fondoH = H-70-esp;
+    const fondo = createPanel(W-2*esp, fondoH, esp, 0, 70+esp+fondoH/2, -D/2+esp/2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical'; applyMaterialToMesh(fondo, 'blanca');
+
+    const gap = (H-70-2*esp-3*esp) / 4;
+    for (let i = 1; i <= 3; i++) {
+        const yPos = 70+esp+(gap+esp)*i-esp/2;
+        const rep = createPanel(W-2*esp, esp, D-esp-5, 0, yPos, esp/2-2.5, 'Repisa '+i);
+        rep.userData.pieceType = 'horizontal'; applyMaterialToMesh(rep, 'blanca');
+    }
+
+    camera.position.set(W*1.4, H*0.85, W*1.9);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Estanteria Vertical Compacta';
+    selectObject(top); saveState();
+    showToast('Estanteria compacta cargada', '#27ae60');
+};
+
+// Muebles de Luis
+window.luisMueble1 = function() {
+    clearAllObjects();
+    const esp = 18, W = 1000, H = 450, D = 500;
+
+    const legL = createPanel(esp, H-esp, D, -W/2+esp/2, (H-esp)/2, 0, 'Lateral Izquierdo');
+    legL.userData.pieceType = 'vertical'; applyMaterialToMesh(legL, 'grafito');
+
+    const legR = createPanel(esp, H-esp, D, W/2-esp/2, (H-esp)/2, 0, 'Lateral Derecho');
+    legR.userData.pieceType = 'vertical'; applyMaterialToMesh(legR, 'grafito');
+
+    const top = createPanel(W, esp, D, 0, H-esp/2, 0, 'Cubierta Superior');
+    top.userData.pieceType = 'horizontal'; applyMaterialToMesh(top, 'grafito');
+
+    const back = createPanel(W-2*esp, 280, esp, 0, H-esp-140, -D/2+esp/2+50, 'Faldon Refuerzo');
+    back.userData.pieceType = 'vertical'; applyMaterialToMesh(back, 'grafito');
+
+    const rep = createPanel(W-2*esp, esp, 250, 0, 240, -D/2+esp+125, 'Repisa Inferior');
+    rep.userData.pieceType = 'horizontal'; applyMaterialToMesh(rep, 'grafito');
+
+    camera.position.set(W*0.95, H*1.35, W*1.25);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Escritorio Gamer Espacioso';
+    selectObject(top); saveState();
+    showToast('Escritorio gamer cargado', '#27ae60');
+};
+
+window.luisMueble2 = function() {
+    clearAllObjects();
+    const esp = 18, W = 700, H = 600, D = 380;
+
+    const latIzq = createPanel(esp, H, D, -W/2+esp/2, H/2, 0, 'Lateral Izquierdo');
+    latIzq.userData.pieceType = 'vertical'; applyMaterialToMesh(latIzq, 'nogal');
+
+    const latDer = createPanel(esp, H, D, W/2-esp/2, H/2, 0, 'Lateral Derecho');
+    latDer.userData.pieceType = 'vertical'; applyMaterialToMesh(latDer, 'nogal');
+
+    const base = createPanel(W-2*esp, esp, D, 0, esp/2, 0, 'Base Inferior');
+    base.userData.pieceType = 'horizontal'; applyMaterialToMesh(base, 'nogal');
+
+    const techo = createPanel(W-2*esp, esp, D, 0, H-esp/2, 0, 'Techo Superior');
+    techo.userData.pieceType = 'horizontal'; applyMaterialToMesh(techo, 'nogal');
+
+    const fondo = createPanel(W-2*esp, H-2*esp, esp, 0, H/2, -D/2+esp/2, 'Fondo Trasero');
+    fondo.userData.pieceType = 'vertical'; applyMaterialToMesh(fondo, 'blanca');
+
+    const rep1 = createPanel(W-2*esp, esp, D-20, 0, H*0.33, 10, 'Repisa Superior');
+    rep1.userData.pieceType = 'horizontal'; applyMaterialToMesh(rep1, 'nogal');
+
+    const rep2 = createPanel(W-2*esp, esp, D-20, 0, H*0.66, 10, 'Repisa Inferior');
+    rep2.userData.pieceType = 'horizontal'; applyMaterialToMesh(rep2, 'nogal');
+
+    const pW = (W-6)/2, pH = H-4;
+    const pIzq = createPanel(pW, pH, esp, -pW/2-1, H/2, D/2+esp/2, 'Puerta Izquierda');
+    pIzq.userData.pieceType = 'vertical'; applyMaterialToMesh(pIzq, 'nogal');
+
+    const pDer = createPanel(pW, pH, esp, pW/2+1, H/2, D/2+esp/2, 'Puerta Derecha');
+    pDer.userData.pieceType = 'vertical'; applyMaterialToMesh(pDer, 'nogal');
+
+    camera.position.set(W*1.3, H*1.2, W*1.5);
+    controls.target.set(0, H/2, 0); controls.update();
+    document.getElementById('project-name-input').value = 'Comoda 2 Puertas 2 Repisas';
+    selectObject(techo); saveState();
+    showToast('Comoda cargada exitosamente', '#27ae60');
 };
