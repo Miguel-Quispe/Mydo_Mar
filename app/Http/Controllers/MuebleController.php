@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Mueble;
+use Illuminate\Support\Facades\Storage;
 
 class MuebleController extends Controller
 {
@@ -28,12 +29,25 @@ class MuebleController extends Controller
             'descripcion'     => 'required|string',
             'estructura_json' => 'nullable|string',
             'imagen'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'imagen_base64'   => 'nullable|string',
         ]);
 
-        // Subir imagen si se proporciona
+        // Subir imagen si se proporciona como archivo o captura base64
         $rutaImagen = null;
         if ($request->hasFile('imagen')) {
             $rutaImagen = $request->file('imagen')->store('muebles', 'public');
+        } elseif ($request->filled('imagen_base64')) {
+            $data = $request->imagen_base64;
+            if (preg_match('/^data:image\/(\w+);base64,/', $data, $type)) {
+                $data = substr($data, strpos($data, ',') + 1);
+                $ext = strtolower($type[1]) === 'png' ? 'png' : 'jpg';
+                $decoded = base64_decode($data);
+                if ($decoded !== false) {
+                    $fileName = 'muebles/' . uniqid('mueble_3d_') . '.' . $ext;
+                    Storage::disk('public')->put($fileName, $decoded);
+                    $rutaImagen = $fileName;
+                }
+            }
         }
 
         // Crear registro
@@ -50,6 +64,6 @@ class MuebleController extends Controller
             'vistas'          => 0,
         ]);
 
-        return redirect()->route('maestro.dashboard')->with('exito', 'Mueble publicado correctamente.');
+        return redirect()->route('maestro.dashboard')->with('exito', 'Mueble publicado correctamente en el catálogo.');
     }
 }

@@ -6,7 +6,7 @@
     <!-- Mensaje de éxito tras guardar, editar o eliminar -->
     @if(session('exito'))
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <strong>✨ ¡Excelente!</strong> {{ session('exito') }}
+            <strong>¡Excelente!</strong> {{ session('exito') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
