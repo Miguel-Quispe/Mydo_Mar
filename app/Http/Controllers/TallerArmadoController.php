@@ -6,6 +6,8 @@ use App\Models\MuebleDiseno;
 use App\Models\MuebleProgresoUsuario;
 use App\Models\UserCuenta;
 use App\Services\DimTiempoService;
+use App\Services\WhatsAppService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class TallerArmadoController extends Controller
@@ -96,6 +98,23 @@ class TallerArmadoController extends Controller
             ]
         );
 
+        // Notificación automática vía WhatsApp al supervisor de planta cuando se completa el mueble
+        if ($completado) {
+            try {
+                $diseno = MuebleDiseno::with('empresa')->find($id);
+                $telefonoSupervisor = $diseno?->empresa?->telefono_whatsapp_empresa_users ?? null;
+                if ($telefonoSupervisor) {
+                    (new WhatsAppService())->notificarCambioEstadoTaller(
+                        $telefonoSupervisor,
+                        $id,
+                        'Completado al 100% y listo para inspección'
+                    );
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Error enviando WhatsApp de fin de taller: " . $e->getMessage());
+            }
+        }
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -106,5 +125,40 @@ class TallerArmadoController extends Controller
         }
 
         return redirect()->back()->with('success', "Progreso actualizado al {$porcentaje}%.");
+    }
+
+    /**
+     * Genera y descarga el Plano Técnico Oficial en PDF para el taller de producción.
+     */
+    public function exportarPlanoPdf(int $id)
+    {
+        $diseno = MuebleDiseno::with([
+            'piezas.material',
+            'herrajesProyecto.catalogoHerraje',
+            'pasosEnsamblaje',
+            'empresa',
+            'categoria',
+            'nivel',
+        ])->findOrFail($id);
+
+        $fechaGeneracion = now()->setTimezone('America/La_Paz')->format('d/m/Y H:i');
+
+        $pdf = Pdf::loadView('taller.pdf.plano-tecnico', [
+            'diseno'          => $diseno,
+            'fechaGeneracion' => $fechaGeneracion,
+        ])
+        ->setPaper('letter', 'portrait')
+        ->setOption('defaultFont', 'DejaVu Sans')
+        ->setOption('isHtml5ParserEnabled', true)
+        ->setOption('isRemoteEnabled', false)
+        ->setOption('dpi', 150);
+
+        $nombreArchivo = sprintf(
+            'PlanoTecnico_ORD-%s_%s.pdf',
+            str_pad($diseno->id_diseno_muebles, 4, '0', STR_PAD_LEFT),
+            now()->format('Ymd_His')
+        );
+
+        return $pdf->download($nombreArchivo);
     }
 }

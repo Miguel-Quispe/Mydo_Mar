@@ -280,17 +280,24 @@
                     placeholder="Nombre del proyecto">
             </div>
         </div>
-        <div class="d-flex gap-3 align-items-center">
+        <div class="d-flex gap-2 align-items-center">
             <a href="{{ route('maestro.dashboard') }}" class="btn btn-light border fw-bold text-secondary px-3 py-2 rounded-2">Cancelar</a>
-            <button type="button" id="btn-submit-mueble" class="btn btn-dark fw-bold text-white px-4 py-2 rounded-2 shadow-sm">
-                {{ isset($mueble) ? 'Guardar Cambios' : 'Guardar y Publicar' }}
+            
+            <button type="button" class="btn btn-outline-primary fw-bold px-3 py-2 rounded-2 shadow-sm d-flex align-items-center gap-1" id="btn-cotizar-bom" title="Calcular materiales, planchas y costos en vivo">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Cotizar BOM
             </button>
 
-            <button type="button" class="btn btn-warning fw-bold text-dark px-4 py-2 rounded-2 shadow-sm ms-2" id="btn-open-corte">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+            <button type="button" id="btn-submit-mueble" class="btn btn-dark fw-bold text-white px-4 py-2 rounded-2 shadow-sm d-flex align-items-center gap-1">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                {{ isset($mueble) ? 'Guardar Cambios' : 'Cotizar y Publicar' }}
+            </button>
+
+            <button type="button" class="btn btn-warning fw-bold text-dark px-3 py-2 rounded-2 shadow-sm ms-1" id="btn-open-corte" title="Ver plano de corte tipo FFDH">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1">
                     <path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/>
                 </svg>
-                Configurar Corte
+                Plano Corte
             </button>
         </div>
     </div>
@@ -692,68 +699,231 @@
 
 </div>
 
-<!-- Modal Publicar Mueble -->
+<!-- Modal de Cotización BOM en Vivo y Publicación B2B -->
 <div class="modal fade" id="modal-publicar-mueble" tabindex="-1" aria-hidden="true" style="z-index: 2200;">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="modal-header bg-dark text-white px-4 py-3">
-                <h5 class="modal-title fw-bold d-flex align-items-center gap-2 mb-0">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                    Publicar Mueble en el Catalogo
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="btn-close-modal-pub" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 bg-light">
-                <div class="row g-4">
-                    <!-- Vista previa 3D -->
-                    <div class="col-md-5 text-center">
-                        <label class="form-label small fw-bold text-muted text-uppercase d-block text-start">Captura 3D Automática</label>
-                        <div class="border rounded-3 p-2 bg-white shadow-sm position-relative">
-                            <img id="pub-preview-img" src="" alt="Vista 3D" class="img-fluid rounded" style="max-height: 220px; object-fit: contain; width: 100%;">
-                            <div class="badge bg-dark position-absolute bottom-0 end-0 m-3 shadow" id="pub-badge-piezas">0 piezas</div>
-                        </div>
-                        <div class="small text-muted mt-2 fst-italic">Esta imagen será visible para los clientes y estudiantes.</div>
+            <!-- Header -->
+            <div class="modal-header bg-dark text-white px-4 py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-warning text-dark p-2 rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                     </div>
-
-                    <!-- Datos del mueble -->
-                    <div class="col-md-7">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark">Nombre del Proyecto *</label>
-                            <input type="text" id="pub-nombre" class="form-control fw-bold" placeholder="Ej: Escritorio Minimalista Roble">
-                        </div>
-
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label small fw-bold text-dark">Precio Estimado (Bs) *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text fw-bold">Bs</span>
-                                    <input type="number" id="pub-precio" class="form-control fw-bold text-primary" value="450" min="0" step="10">
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold text-dark">Material Predominante *</label>
-                                <input type="text" id="pub-material" class="form-control" value="Melamina 18mm">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark">Dimensiones Generales Calculadas</label>
-                            <input type="text" id="pub-dimensiones" class="form-control bg-white" readonly>
-                        </div>
-
-                        <div class="mb-0">
-                            <label class="form-label small fw-bold text-dark">Descripción del Diseño *</label>
-                            <textarea id="pub-descripcion" class="form-control" rows="3" placeholder="Describe el mueble...">Diseño ergonómico y moderno fabricado en melamina de 18 mm con cantos de PVC. Ideal para estudio, dormitorio u oficina.</textarea>
-                        </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0 text-white">Cotizador BOM & Publicación de Proyecto 3D</h5>
+                        <div class="small text-white-50">Cálculo paramétrico en tiempo real conectado al núcleo HTAP</div>
                     </div>
                 </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 py-2 px-3 fw-bold" id="bom-status-badge">
+                        <span class="spinner-grow spinner-grow-sm me-1 d-none" id="bom-spinner" role="status"></span>
+                        Cálculo en Vivo OK
+                    </span>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="btn-close-modal-pub" aria-label="Close"></button>
+                </div>
             </div>
-            <div class="modal-footer bg-white px-4 py-3 d-flex justify-content-between">
-                <button type="button" class="btn btn-outline-secondary fw-bold px-3" data-bs-dismiss="modal" id="btn-cancel-modal-pub">Seguir Editando</button>
-                <button type="button" class="btn btn-success fw-bold px-4 shadow-sm d-flex align-items-center gap-2" id="btn-confirm-publicar">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-                    Confirmar y Publicar
+
+            <!-- Navegación de Pestañas -->
+            <div class="bg-light border-bottom px-4 pt-2">
+                <ul class="nav nav-tabs border-0" id="bomModalTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold text-dark border-0 border-bottom border-3 border-warning pb-2 d-flex align-items-center gap-2" id="tab-btn-bom" data-bs-toggle="tab" data-bs-target="#tab-pane-bom" type="button" role="tab">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            1. Cotización & Tableros (BOM)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold text-secondary border-0 pb-2 d-flex align-items-center gap-2" id="tab-btn-piezas" data-bs-toggle="tab" data-bs-target="#tab-pane-piezas" type="button" role="tab">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                            2. Despiece Técnico Milimétrico (<span id="tab-count-piezas">0</span>)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold text-secondary border-0 pb-2 d-flex align-items-center gap-2" id="tab-btn-publicar" data-bs-toggle="tab" data-bs-target="#tab-pane-publicar" type="button" role="tab">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+                            3. Datos Comerciales & Publicación
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body p-4 bg-light overflow-auto" style="max-height: calc(85vh - 140px);">
+                <div class="tab-content" id="bomModalTabsContent">
+                    
+                    <!-- TAB 1: COTIZACIÓN BOM Y TABLEROS -->
+                    <div class="tab-pane fade show active" id="tab-pane-bom" role="tabpanel">
+                        <!-- KPI Cards -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-primary">
+                                    <div class="text-muted small fw-bold text-uppercase mb-1">Superficie Total</div>
+                                    <div class="h3 fw-bold text-dark mb-0"><span id="bom-m2-neto">0.00</span> <small class="fs-6 text-muted">m²</small></div>
+                                    <div class="small text-muted mt-1">
+                                        <span class="badge bg-light text-primary border" id="bom-m2-desp">+15% Desp: 0.00 m²</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-warning">
+                                    <div class="text-muted small fw-bold text-uppercase mb-1">Planchas Necesarias</div>
+                                    <div class="h3 fw-bold text-warning mb-0"><span id="bom-planchas">0</span> <small class="fs-6 text-dark">unid.</small></div>
+                                    <div class="small text-muted mt-1 text-truncate" title="Formato estándar 2750 x 1830 mm">
+                                        Formato 2750 × 1830 mm
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-info">
+                                    <div class="text-muted small fw-bold text-uppercase mb-1">Costo Melamina</div>
+                                    <div class="h3 fw-bold text-dark mb-0"><small class="fs-6 text-muted">Bs</small> <span id="bom-costo-melamina">0.00</span></div>
+                                    <div class="small text-muted mt-1 text-truncate" id="bom-material-nombre">
+                                        Melamina Roble 18mm
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-3 p-3 bg-success bg-opacity-10 border border-success border-opacity-25 h-100">
+                                    <div class="text-success small fw-bold text-uppercase mb-1">Costo Total Estimado</div>
+                                    <div class="h3 fw-bold text-success mb-0"><small class="fs-6">Bs</small> <span id="bom-costo-total">0.00</span></div>
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <small class="text-muted">Melamina + Herrajes</small>
+                                        <button type="button" class="btn btn-xs btn-outline-success py-0 px-2 fw-bold" id="btn-aplicar-precio-bom" title="Copiar este costo al precio final de venta">
+                                            Fijar Precio
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección Herrajes e Insumos -->
+                        <div class="card border-0 shadow-sm rounded-3 bg-white p-3 mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">Herrajes e Insumos de Ensamble Requeridos</h6>
+                                    <small class="text-muted">Calculados automáticamente en función de la cantidad y uniones de las piezas 3D</small>
+                                </div>
+                                <span class="badge bg-secondary" id="bom-costo-herrajes-badge">Subtotal: Bs 0.00</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm align-middle mb-0">
+                                    <thead class="table-light small text-uppercase">
+                                        <tr>
+                                            <th>Herraje / Fijación</th>
+                                            <th class="text-center">Cantidad Requerida</th>
+                                            <th class="text-end">Precio Unitario</th>
+                                            <th class="text-end">Subtotal Estimado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bom-herrajes-tbody" class="small">
+                                        <tr>
+                                            <td colspan="4" class="text-center py-3 text-muted">Cargando herrajes...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: DESPIECE TÉCNICO MILIMÉTRICO -->
+                    <div class="tab-pane fade" id="tab-pane-piezas" role="tabpanel">
+                        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">Despiece Milimétrico para Corte en Sierra</h6>
+                                    <small class="text-muted">Geometría exacta extraída de la escena Three.js para la tabla <code>muebles_piezas</code></small>
+                                </div>
+                                <span class="badge bg-dark" id="bom-piezas-badge">0 piezas</span>
+                            </div>
+                            <div class="table-responsive" style="max-height: 380px;">
+                                <table class="table table-sm table-striped table-hover align-middle mb-0" id="bom-piezas-table">
+                                    <thead class="table-dark small text-uppercase sticky-top">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nombre de Pieza</th>
+                                            <th class="text-end">Ancho (mm)</th>
+                                            <th class="text-end">Alto (mm)</th>
+                                            <th class="text-end">Espesor (mm)</th>
+                                            <th class="text-end">Área (m²)</th>
+                                            <th class="text-center">Coordenadas 3D (X, Y, Z)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bom-piezas-tbody" class="small font-monospace">
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-muted">No se detectaron piezas en la escena 3D.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: DATOS COMERCIALES & PUBLICACIÓN -->
+                    <div class="tab-pane fade" id="tab-pane-publicar" role="tabpanel">
+                        <div class="row g-4">
+                            <!-- Vista previa 3D -->
+                            <div class="col-md-5 text-center">
+                                <label class="form-label small fw-bold text-muted text-uppercase d-block text-start">Render 3D Automático</label>
+                                <div class="border rounded-3 p-2 bg-white shadow-sm position-relative">
+                                    <img id="pub-preview-img" src="" alt="Vista 3D" class="img-fluid rounded" style="max-height: 220px; object-fit: contain; width: 100%;">
+                                    <div class="badge bg-dark position-absolute bottom-0 end-0 m-3 shadow" id="pub-badge-piezas">0 piezas</div>
+                                </div>
+                                <div class="small text-muted mt-2 fst-italic">Esta captura se almacenará en <code>imagen_render_url</code> y el catálogo público.</div>
+                            </div>
+
+                            <!-- Datos del formulario -->
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-dark">Nombre del Proyecto *</label>
+                                    <input type="text" id="pub-nombre" class="form-control fw-bold" placeholder="Ej: Escritorio Minimalista Roble">
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold text-dark">Precio Estimado (Bs) *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text fw-bold">Bs</span>
+                                            <input type="number" id="pub-precio" class="form-control fw-bold text-primary" value="450" min="0" step="10">
+                                        </div>
+                                        <small class="text-muted" style="font-size: 0.72rem;">Sugerido por cálculo BOM</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold text-dark">Material Predominante *</label>
+                                        <input type="text" id="pub-material" class="form-control" value="Melamina 18mm">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-dark">Dimensiones Generales Calculadas</label>
+                                    <input type="text" id="pub-dimensiones" class="form-control bg-white" readonly>
+                                </div>
+
+                                <div class="mb-0">
+                                    <label class="form-label small fw-bold text-dark">Descripción Técnica del Diseño *</label>
+                                    <textarea id="pub-descripcion" class="form-control" rows="3" placeholder="Describe el mueble...">Diseño ergonómico y moderno fabricado en melamina de 18 mm con cantos de PVC. Ideal para estudio, dormitorio u oficina.</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer bg-white px-4 py-3 d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-outline-secondary fw-bold px-3" data-bs-dismiss="modal" id="btn-cancel-modal-pub">
+                    Volver al Diseñador
                 </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light border fw-bold text-dark px-3 d-flex align-items-center gap-1" id="btn-recalcular-bom-modal">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        Recalcular BOM
+                    </button>
+                    <button type="button" class="btn btn-success fw-bold px-4 shadow-sm d-flex align-items-center gap-2" id="btn-confirm-publicar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+                        Confirmar y Publicar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1019,20 +1189,69 @@
             });
         });
         
-        // Publicación del mueble mediante Modal con previsualización 3D
+        // ═════════════════════════════════════════════════════════════════════
+        // INTEGRACIÓN BOM EN VIVO CON THREE.JS Y API /api/muebles/calcular-bom
+        // ═════════════════════════════════════════════════════════════════════
         const btnSubmit = document.getElementById('btn-submit-mueble');
+        const btnCotizarBom = document.getElementById('btn-cotizar-bom');
+        const btnRecalcularBomModal = document.getElementById('btn-recalcular-bom-modal');
+        const btnAplicarPrecioBom = document.getElementById('btn-aplicar-precio-bom');
         const modalPubEl = document.getElementById('modal-publicar-mueble');
         const btnClosePub = document.getElementById('btn-close-modal-pub');
         const btnCancelPub = document.getElementById('btn-cancel-modal-pub');
         const btnConfirmPub = document.getElementById('btn-confirm-publicar');
         const formMueble = document.getElementById('form-mueble');
 
-        function openPublishModal() {
+        let latestBomData = null;
+
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+                || document.querySelector('input[name="_token"]')?.value 
+                || '';
+        }
+
+        function switchModalTab(tabKey) {
+            const tabBtn = document.getElementById('tab-btn-' + tabKey);
+            if (!tabBtn) return;
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+            } else {
+                // Fallback manual de tabs
+                document.querySelectorAll('#bomModalTabs .nav-link').forEach(btn => {
+                    btn.classList.remove('active', 'border-bottom', 'border-3', 'border-warning');
+                    btn.classList.add('text-secondary');
+                });
+                tabBtn.classList.add('active', 'border-bottom', 'border-3', 'border-warning');
+                tabBtn.classList.remove('text-secondary');
+
+                document.querySelectorAll('#bomModalTabsContent .tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+                const targetPane = document.getElementById('tab-pane-' + tabKey);
+                if (targetPane) targetPane.classList.add('show', 'active');
+            }
+        }
+
+        async function fetchAndRenderBom(targetTab = null) {
+            // 1. Mostrar modal inmediatamente para feedback visual
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalPubEl);
+                modal.show();
+            } else {
+                modalPubEl.style.display = 'block';
+                modalPubEl.classList.add('show');
+                if (overlay) overlay.classList.add('show');
+            }
+
+            if (targetTab) {
+                switchModalTab(targetTab);
+            }
+
+            // 2. Extraer datos actuales de la escena Three.js
             const projectName = document.getElementById('project-name-input')?.value?.trim() || 'Proyecto Mydo Mar';
             const pubNombreInput = document.getElementById('pub-nombre');
             if (pubNombreInput) pubNombreInput.value = projectName;
 
-            // Medidas y captura 3D automática
             const dims = typeof window.getSceneBoundingDimensions === 'function' ? window.getSceneBoundingDimensions() : '1200 × 600 × 750 mm';
             const pubDimInput = document.getElementById('pub-dimensiones');
             if (pubDimInput) pubDimInput.value = dims;
@@ -1043,18 +1262,168 @@
                 imgPreview.src = screenshot;
             }
 
-            const piezas = typeof window.extractPiecesFromScene === 'function' ? window.extractPiecesFromScene() : [];
-            const badge = document.getElementById('pub-badge-piezas');
-            if (badge) badge.innerText = `${piezas.length} piezas`;
+            // Piezas desde objetos 3D
+            const exportData = typeof window.getExportData === 'function' ? window.getExportData() : {};
+            const flatObjects = exportData.objetos || [];
+            const scenePieces = typeof window.extractPiecesFromScene === 'function' ? window.extractPiecesFromScene() : [];
 
-            // Mostrar modal
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                const modal = bootstrap.Modal.getOrCreateInstance(modalPubEl);
-                modal.show();
-            } else {
-                modalPubEl.style.display = 'block';
-                modalPubEl.classList.add('show');
-                if (overlay) overlay.classList.add('show');
+            let piezasPayload = [];
+            if (flatObjects.length > 0) {
+                piezasPayload = flatObjects.map((o, idx) => ({
+                    name: o.name || `Pieza #${idx + 1}`,
+                    width: o.w || 500,
+                    height: o.h || 500,
+                    depth: o.d || 18,
+                    posicion_x: o.pos ? o.pos[0] : 0,
+                    posicion_y: o.pos ? o.pos[1] : 0,
+                    posicion_z: o.pos ? o.pos[2] : 0,
+                    rotacion_x: o.rot ? o.rot[0] : 0,
+                    rotacion_y: o.rot ? o.rot[1] : 0,
+                    rotacion_z: o.rot ? o.rot[2] : 0,
+                }));
+            } else if (scenePieces.length > 0) {
+                piezasPayload = scenePieces.map((p, idx) => ({
+                    name: p.name || `Pieza #${idx + 1}`,
+                    width: p.pw || 500,
+                    height: p.ph || 500,
+                    depth: p.thickness || 18,
+                    posicion_x: 0,
+                    posicion_y: 0,
+                    posicion_z: 0,
+                }));
+            }
+
+            const countEl = document.getElementById('pub-badge-piezas');
+            if (countEl) countEl.innerText = `${piezasPayload.length} piezas`;
+            const tabCountEl = document.getElementById('tab-count-piezas');
+            if (tabCountEl) tabCountEl.innerText = `${piezasPayload.length}`;
+
+            // Estado de carga
+            const badgeStatus = document.getElementById('bom-status-badge');
+            const spinner = document.getElementById('bom-spinner');
+            if (badgeStatus) {
+                badgeStatus.className = 'badge bg-warning bg-opacity-25 text-dark border border-warning py-2 px-3 fw-bold';
+                badgeStatus.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Calculando BOM...';
+            }
+
+            if (piezasPayload.length === 0) {
+                if (badgeStatus) {
+                    badgeStatus.className = 'badge bg-secondary text-white py-2 px-3 fw-bold';
+                    badgeStatus.innerText = 'Escena Vacía';
+                }
+                document.getElementById('bom-m2-neto').innerText = '0.00';
+                document.getElementById('bom-m2-desp').innerText = '+15% Desp: 0.00 m²';
+                document.getElementById('bom-planchas').innerText = '0';
+                document.getElementById('bom-costo-melamina').innerText = '0.00';
+                document.getElementById('bom-costo-total').innerText = '0.00';
+                document.getElementById('bom-herrajes-tbody').innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">Agrega piezas al lienzo 3D para calcular el requerimiento de herrajes.</td></tr>';
+                document.getElementById('bom-piezas-tbody').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No se detectaron piezas en el lienzo 3D.</td></tr>';
+                return;
+            }
+
+            // 3. Llamada Fetch al endpoint de cálculo
+            try {
+                const response = await fetch('/api/muebles/calcular-bom', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        piezas: piezasPayload,
+                        material_id: 1,
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+
+                const data = await response.json();
+                latestBomData = data;
+
+                // 4. Renderizar Métricas de Tableros y Costos
+                document.getElementById('bom-m2-neto').innerText = Number(data.m2_neto).toFixed(2);
+                document.getElementById('bom-m2-desp').innerText = `+15% Desp: ${Number(data.m2_con_desperdicio).toFixed(2)} m²`;
+                document.getElementById('bom-planchas').innerText = data.planchas_necesarias;
+                document.getElementById('bom-costo-melamina').innerText = Number(data.costo_melamina).toFixed(2);
+                document.getElementById('bom-costo-total').innerText = Number(data.costo_total).toFixed(2);
+                document.getElementById('bom-material-nombre').innerText = data.material_nombre || 'Melamina 18mm';
+                document.getElementById('bom-costo-herrajes-badge').innerText = `Subtotal: Bs ${Number(data.costo_herrajes).toFixed(2)}`;
+
+                // Renderizar Tabla de Herrajes
+                const tbodyHerrajes = document.getElementById('bom-herrajes-tbody');
+                if (tbodyHerrajes) {
+                    let htmlH = '';
+                    if (data.herrajes && data.herrajes.length > 0) {
+                        data.herrajes.forEach(h => {
+                            htmlH += `
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">${h.nombre}</div>
+                                        <small class="text-muted">Fijación de alta resistencia para melamina 18mm</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1 fw-bold fs-6">${h.cantidad} unid.</span>
+                                    </td>
+                                    <td class="text-end text-muted font-monospace">Bs ${Number(h.precio_unit).toFixed(2)}</td>
+                                    <td class="text-end fw-bold text-primary font-monospace">Bs ${Number(h.subtotal).toFixed(2)}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        htmlH = '<tr><td colspan="4" class="text-center py-3 text-muted">No se requieren herrajes para este ensamblaje.</td></tr>';
+                    }
+                    tbodyHerrajes.innerHTML = htmlH;
+                }
+
+                // Renderizar Tabla de Despiece Técnico
+                const tbodyPiezas = document.getElementById('bom-piezas-tbody');
+                if (tbodyPiezas) {
+                    let htmlP = '';
+                    if (data.piezas && data.piezas.length > 0) {
+                        data.piezas.forEach((p, idx) => {
+                            htmlP += `
+                                <tr>
+                                    <td class="text-muted fw-bold">${idx + 1}</td>
+                                    <td class="fw-bold text-dark">${p.nombre}</td>
+                                    <td class="text-end text-primary fw-bold">${Math.round(p.ancho_mm)}</td>
+                                    <td class="text-end text-primary fw-bold">${Math.round(p.alto_mm)}</td>
+                                    <td class="text-end">${Math.round(p.espesor_mm)}</td>
+                                    <td class="text-end text-success fw-bold">${p.m2}</td>
+                                    <td class="text-center text-muted small">[${Math.round(p.posicion_x)}, ${Math.round(p.posicion_y)}, ${Math.round(p.posicion_z)}]</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        htmlP = '<tr><td colspan="7" class="text-center py-4 text-muted">No se detectaron piezas en el despiece.</td></tr>';
+                    }
+                    tbodyPiezas.innerHTML = htmlP;
+                    document.getElementById('bom-piezas-badge').innerText = `${data.piezas.length} piezas`;
+                }
+
+                // Sincronizar Precio en pestaña de Publicación si no ha sido personalizado
+                const pubPrecioInp = document.getElementById('pub-precio');
+                if (pubPrecioInp) {
+                    const precioSugerido = Math.round(data.costo_total * 1.30); // 30% margen sobre costo
+                    if (!pubPrecioInp.value || pubPrecioInp.value === '450' || pubPrecioInp.value === '0') {
+                        pubPrecioInp.value = precioSugerido;
+                    }
+                }
+
+                // Estado final OK
+                if (badgeStatus) {
+                    badgeStatus.className = 'badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 py-2 px-3 fw-bold';
+                    badgeStatus.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><polyline points="20 6 9 17 4 12"/></svg> Cálculo en Vivo OK';
+                }
+
+            } catch (err) {
+                console.error('Error calculando BOM:', err);
+                if (badgeStatus) {
+                    badgeStatus.className = 'badge bg-danger bg-opacity-25 text-danger border border-danger py-2 px-3 fw-bold';
+                    badgeStatus.innerText = 'Error en Cálculo';
+                }
             }
         }
 
@@ -1069,16 +1438,47 @@
             }
         }
 
+        // Botón Cotizar BOM (Abre modal directamente en Tab 1: Cotización)
+        if (btnCotizarBom) {
+            btnCotizarBom.addEventListener('click', (e) => {
+                e.preventDefault();
+                fetchAndRenderBom('bom');
+            });
+        }
+
+        // Botón Recalcular dentro del Modal
+        if (btnRecalcularBomModal) {
+            btnRecalcularBomModal.addEventListener('click', (e) => {
+                e.preventDefault();
+                fetchAndRenderBom();
+            });
+        }
+
+        // Botón Fijar Precio sugerido por BOM
+        if (btnAplicarPrecioBom) {
+            btnAplicarPrecioBom.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (latestBomData && latestBomData.costo_total) {
+                    const pubPrecio = document.getElementById('pub-precio');
+                    if (pubPrecio) {
+                        pubPrecio.value = Math.round(latestBomData.costo_total);
+                        alert(`Precio de venta fijado en Bs ${Math.round(latestBomData.costo_total)} (Costo BOM de Melamina + Herrajes)`);
+                    }
+                }
+            });
+        }
+
+        // Botón Guardar / Publicar de la barra superior
         if (btnSubmit) {
             btnSubmit.addEventListener('click', (e) => {
                 e.preventDefault();
 
                 if (window.__editMode__) {
-                    // Modo edicion: guardar directamente sin modal
+                    // Modo edición directo
                     const nombre = document.getElementById('project-name-input')?.value?.trim() || window.__muebleNombre__ || '';
                     if (!nombre) { alert('Escribe un nombre para el mueble.'); return; }
 
-                    const dims       = typeof window.getSceneBoundingDimensions === 'function' ? window.getSceneBoundingDimensions() : window.__muebleDims__ || '';
+                    const dims = typeof window.getSceneBoundingDimensions === 'function' ? window.getSceneBoundingDimensions() : window.__muebleDims__ || '';
                     const screenshot = typeof window.getScene3DScreenshot === 'function' ? window.getScene3DScreenshot() : '';
                     const exportData = typeof window.getExportData === 'function' ? window.getExportData() : {};
 
@@ -1094,25 +1494,28 @@
                     btnSubmit.innerText = 'Guardando...';
                     HTMLFormElement.prototype.submit.call(formMueble);
                 } else {
-                    // Modo crear: abrir modal de publicacion
-                    openPublishModal();
+                    // Modo crear: calcula el BOM y abre en la pestaña de confirmación de publicación
+                    fetchAndRenderBom('publicar');
                 }
             });
         }
+
         if (btnClosePub) btnClosePub.addEventListener('click', closePublishModal);
         if (btnCancelPub) btnCancelPub.addEventListener('click', closePublishModal);
 
+        // Envío final del formulario tras confirmación en el modal
         if (btnConfirmPub && formMueble) {
             btnConfirmPub.addEventListener('click', function(e) {
                 e.preventDefault();
                 const nombre = document.getElementById('pub-nombre')?.value?.trim();
                 if (!nombre) {
                     alert("Por favor ingresa un nombre para el mueble.");
+                    switchModalTab('publicar');
                     document.getElementById('pub-nombre')?.focus();
                     return;
                 }
 
-                const precio = parseFloat(document.getElementById('pub-precio')?.value) || 0;
+                const precio = parseFloat(document.getElementById('pub-precio')?.value) || (latestBomData ? latestBomData.costo_total : 0);
                 const material = document.getElementById('pub-material')?.value?.trim() || 'Melamina 18mm';
                 const dimensiones = document.getElementById('pub-dimensiones')?.value?.trim() || '1200 × 600 × 750 mm';
                 const descripcion = document.getElementById('pub-descripcion')?.value?.trim() || 'Mueble diseñado en Mydo-mar.';
@@ -1131,7 +1534,7 @@
 
                 // Deshabilitar botón para evitar envíos dobles
                 btnConfirmPub.disabled = true;
-                btnConfirmPub.innerText = 'Publicando...';
+                btnConfirmPub.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Publicando...';
 
                 // Enviar formulario real
                 HTMLFormElement.prototype.submit.call(formMueble);

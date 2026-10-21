@@ -20,8 +20,8 @@ Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo.in
 Route::get('/catalogo/{id}', [CatalogoController::class, 'show'])->name('catalogo.show');
 Route::get('/catalogo/{id}/guia-armado', [CatalogoController::class, 'guiaArmado'])->name('catalogo.armado');
 
-// --- MÓDULO B2B CORPORATIVO (MADEART & AUDITORÍA FORENSE) ---
-Route::prefix('empresa')->name('empresa.')->group(function () {
+// --- MÓDULO B2B CORPORATIVO (MADEART & AUDITORÍA FORENSE - SOLO GERENTES/ADMINS) ---
+Route::middleware(['auth', 'b2b_gerente'])->prefix('empresa')->name('empresa.')->group(function () {
     // Módulo A: Gestión Masiva de Personal y Subroles
     Route::get('/empleados', [EmpresaEmpleadoController::class, 'index'])->name('empleados.index');
     Route::post('/empleados/generar-lote', [EmpresaEmpleadoController::class, 'generarLote'])->name('empleados.generarLote');
@@ -32,11 +32,12 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
     Route::get('/auditoria', [EmpresaAuditoriaController::class, 'index'])->name('auditoria.index');
 });
 
-// --- MÓDULO TALLER Y OPERARIOS DE PLANTA (FASE 3) ---
-Route::prefix('taller')->name('taller.')->group(function () {
+// --- MÓDULO TALLER Y OPERARIOS DE PLANTA (SOLO ARMADORES/SUPERVISORES/PLANTA) ---
+Route::middleware(['auth', 'armador_taller'])->prefix('taller')->name('taller.')->group(function () {
     Route::get('/', [TallerArmadoController::class, 'index'])->name('index');
     Route::get('/armado/{id}', [TallerArmadoController::class, 'show'])->name('armado');
     Route::post('/armado/{id}/progreso', [TallerArmadoController::class, 'actualizarProgreso'])->name('progreso');
+    Route::get('/armado/{id}/plano-pdf', [TallerArmadoController::class, 'exportarPlanoPdf'])->name('plano-pdf');
 });
 
 // Endpoint API para cálculo BOM en tiempo real
@@ -76,16 +77,16 @@ Route::middleware(['auth'])->group(function () {
 
     // Panel del Maestro Carpintero (Exclusivo rol_id 1)
     Route::middleware([CheckRol::class . ':1'])->group(function () {
-    Route::get('/maestro/dashboard', [MaestroController::class, 'dashboard'])->name('maestro.dashboard');
-    
-    // Publicación (Ahora usando MuebleController)
-    Route::get('/muebles/crear', [MuebleController::class, 'create'])->name('muebles.create');
-    Route::post('/muebles', [MuebleController::class, 'store'])->name('muebles.store');
+        Route::get('/maestro/dashboard', [MaestroController::class, 'dashboard'])->name('maestro.dashboard');
+        Route::get('/maestro/muebles/{id}/editar', [MaestroController::class, 'edit'])->name('maestro.muebles.edit');
+        Route::put('/maestro/muebles/{id}', [MaestroController::class, 'update'])->name('maestro.muebles.update');
+        Route::delete('/maestro/muebles/{id}', [MaestroController::class, 'destroy'])->name('maestro.muebles.destroy');
+    });
 
-    // Edición y Eliminación
-    Route::get('/maestro/muebles/{id}/editar', [MaestroController::class, 'edit'])->name('maestro.muebles.edit');
-    Route::put('/maestro/muebles/{id}', [MaestroController::class, 'update'])->name('maestro.muebles.update');
-    Route::delete('/maestro/muebles/{id}', [MaestroController::class, 'destroy'])->name('maestro.muebles.destroy');
+    // Diseñador 3D Paramétrico y Persistencia de Modelos (Diseñadores 3D, Maestros y Admins)
+    Route::middleware(['disenador_3d'])->group(function () {
+        Route::get('/muebles/crear', [MuebleController::class, 'create'])->name('muebles.create');
+        Route::post('/muebles', [MuebleController::class, 'store'])->name('muebles.store');
     });
 
     // Panel del Administrador (Exclusivo rol_id 0)

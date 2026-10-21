@@ -29,13 +29,21 @@ class MuebleBomService
         $piezasProcesadas = [];
 
         foreach ($piezas as $idx => $p) {
-            $ancho = (float) ($p['width'] ?? $p['ancho'] ?? 500);
-            $alto = (float) ($p['height'] ?? $p['alto'] ?? 500);
-            $espesor = (float) ($p['depth'] ?? $p['espesor'] ?? 18);
+            $ancho = (float) ($p['width'] ?? $p['ancho'] ?? $p['pw'] ?? $p['w'] ?? 500);
+            $alto = (float) ($p['height'] ?? $p['alto'] ?? $p['ph'] ?? $p['h'] ?? 500);
+            $espesor = (float) ($p['depth'] ?? $p['espesor'] ?? $p['thickness'] ?? $p['d'] ?? 18);
             $nombre = $p['name'] ?? $p['nombre'] ?? ('Pieza #' . ($idx + 1));
             
             $m2Pieza = ($ancho * $alto) / 1000000.0;
             $m2Total += $m2Pieza;
+
+            $posX = (float) ($p['posicion_x'] ?? $p['x'] ?? ($p['pos'][0] ?? 0));
+            $posY = (float) ($p['posicion_y'] ?? $p['y'] ?? ($p['pos'][1] ?? 0));
+            $posZ = (float) ($p['posicion_z'] ?? $p['z'] ?? ($p['pos'][2] ?? 0));
+
+            $rotX = (float) ($p['rotacion_x'] ?? $p['rotX'] ?? ($p['rot'][0] ?? 0));
+            $rotY = (float) ($p['rotacion_y'] ?? $p['rotY'] ?? ($p['rot'][1] ?? 0));
+            $rotZ = (float) ($p['rotacion_z'] ?? $p['rotZ'] ?? ($p['rot'][2] ?? 0));
 
             $piezasProcesadas[] = [
                 'nombre' => $nombre,
@@ -43,12 +51,12 @@ class MuebleBomService
                 'alto_mm' => $alto,
                 'espesor_mm' => $espesor,
                 'm2' => round($m2Pieza, 4),
-                'posicion_x' => (float) ($p['x'] ?? 0),
-                'posicion_y' => (float) ($p['y'] ?? 0),
-                'posicion_z' => (float) ($p['z'] ?? 0),
-                'rotacion_x' => (float) ($p['rotX'] ?? 0),
-                'rotacion_y' => (float) ($p['rotY'] ?? 0),
-                'rotacion_z' => (float) ($p['rotZ'] ?? 0),
+                'posicion_x' => $posX,
+                'posicion_y' => $posY,
+                'posicion_z' => $posZ,
+                'rotacion_x' => $rotX,
+                'rotacion_y' => $rotY,
+                'rotacion_z' => $rotZ,
             ];
         }
 

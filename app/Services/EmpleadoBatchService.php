@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Mail\CredencialesEmpleadoMailable;
 use App\Models\EmpresaRol;
 use App\Models\EmpresaUser;
 use App\Models\UserCuenta;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class EmpleadoBatchService
@@ -91,6 +95,22 @@ class EmpleadoBatchService
                     $passwordHash
                 );
 
+                // Notificaciones Automatizadas (Punto 4: Email y WhatsApp)
+                try {
+                    // 1. Enviar Correo Electrónico
+                    if (!empty($cuenta->email_usuario_users)) {
+                        Mail::to($cuenta->email_usuario_users)->send(new CredencialesEmpleadoMailable($cuenta, $plainPassword));
+                    }
+
+                    // 2. Enviar WhatsApp (al teléfono corporativo / WhatsApp registrado)
+                    $telefonoDestino = $empresa->telefono_whatsapp_empresa_users ?? null;
+                    if (!empty($telefonoDestino)) {
+                        (new WhatsAppService())->enviarCredenciales($telefonoDestino, $cuenta->nombre_usuario_users, $plainPassword);
+                    }
+                } catch (\Throwable $e) {
+                    Log::error("Error al enviar notificaciones al empleado {$cuenta->nombre_usuario_users}: " . $e->getMessage());
+                }
+
                 $cuentasCreadas[] = [
                     'id' => $cuenta->id_usuario_users,
                     'username' => $username,
@@ -135,6 +155,19 @@ class EmpleadoBatchService
                 $hashAnterior,
                 $nuevoHash
             );
+
+            // Notificación automatizada del nuevo acceso
+            try {
+                if (!empty($cuenta->email_usuario_users)) {
+                    Mail::to($cuenta->email_usuario_users)->send(new CredencialesEmpleadoMailable($cuenta, $nuevaPasswordPlana));
+                }
+                $telefonoDestino = $cuenta->empresa?->telefono_whatsapp_empresa_users ?? null;
+                if (!empty($telefonoDestino)) {
+                    (new WhatsAppService())->enviarCredenciales($telefonoDestino, $cuenta->nombre_usuario_users, $nuevaPasswordPlana);
+                }
+            } catch (\Throwable $e) {
+                Log::error("Error al notificar reseteo de password al empleado {$cuenta->nombre_usuario_users}: " . $e->getMessage());
+            }
 
             return [
                 'success' => true,

@@ -21,14 +21,29 @@
                     </p>
                 </div>
 
-                <div class="text-end">
-                    <div class="small text-secondary mb-1">Avance de Montaje:</div>
-                    <span class="fs-4 fw-bold {{ $progreso->completado_muebles ? 'text-success' : 'text-warning' }}" id="progresoTexto">
-                        {{ $progreso->porcentaje_progreso_muebles }}%
-                    </span>
-                    <div class="progress bg-dark mt-1" style="width: 180px; height: 8px;">
-                        <div class="progress-bar {{ $progreso->completado_muebles ? 'bg-success' : 'bg-warning' }}" id="barraProgreso" role="progressbar" style="width: {{ $progreso->porcentaje_progreso_muebles }}%;"></div>
+                <div class="d-flex flex-column align-items-end gap-2">
+                    {{-- Progreso --}}
+                    <div class="text-end">
+                        <div class="small text-secondary mb-1">Avance de Montaje:</div>
+                        <span class="fs-4 fw-bold {{ $progreso->completado_muebles ? 'text-success' : 'text-warning' }}" id="progresoTexto">
+                            {{ $progreso->porcentaje_progreso_muebles }}%
+                        </span>
+                        <div class="progress bg-dark mt-1" style="width: 180px; height: 8px;">
+                            <div class="progress-bar {{ $progreso->completado_muebles ? 'bg-success' : 'bg-warning' }}" id="barraProgreso" role="progressbar" style="width: {{ $progreso->porcentaje_progreso_muebles }}%;"></div>
+                        </div>
                     </div>
+
+                    {{-- Botón de Descarga PDF --}}
+                    <a id="btn-descargar-plano-pdf"
+                       href="{{ route('taller.plano-pdf', $diseno->id_diseno_muebles) }}"
+                       class="btn btn-sm fw-bold d-inline-flex align-items-center gap-2 shadow-sm"
+                       style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; letter-spacing: 0.4px;"
+                       title="Descargar plano técnico oficial para el taller de producción">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><rect x="3" y="18" width="18" height="2" rx="1"/>
+                        </svg>
+                        Descargar Plano PDF
+                    </a>
                 </div>
             </div>
         </div>
