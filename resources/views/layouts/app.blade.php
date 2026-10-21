@@ -100,8 +100,16 @@
                                     <a href="{{ route('admin.perfil') }}" class="btn btn-danger fw-bold px-3">Panel Admin</a>
                                 </li>
                             
-                                <!-- Si es Maestro Carpintero -->
-                            @elseif(auth()->user()->rol_id == 1 || str_starts_with(auth()->user()->clave_rol ?? '', 'MAE'))
+                                <!-- Si es Empresa B2B / Gerente -->
+                            @elseif(auth()->user()->rol_id == 3 || str_starts_with(auth()->user()->clave_rol ?? '', 'EMP'))
+                                <li class="nav-item">
+                                    <a href="{{ route('empresa.empleados.index') }}" class="btn btn-warning fw-bold px-3 d-flex align-items-center gap-1 shadow-sm">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                                        <span>Gestión Empresa B2B</span>
+                                    </a>
+                                </li>
+                            <!-- Si es Maestro Carpintero -->
+                            @elseif(auth()->user()->rol_id == 1 || str_starts_with(auth()->user()->clave_rol ?? '', 'MAE') || str_starts_with(auth()->user()->clave_rol ?? '', 'MST'))
                                 <li class="nav-item">
                                     <a href="{{ route('maestro.dashboard') }}" class="btn btn-warning fw-bold px-3">Mi Panel (Maestro)</a>
                                 </li>
