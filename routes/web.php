@@ -97,3 +97,10 @@ Route::middleware(['auth'])->group(function () {
     });
 
 });
+// --- MÓDULO TARIFARIO DE MATERIALES Y COSTOS (EXCLUSIVO MAESTROS Y EMPRESAS) ---
+use App\Http\Controllers\MaterialCostoController;
+Route::middleware(['auth'])->prefix('materiales')->name('materiales.')->group(function () {
+    Route::get('/costos', [MaterialCostoController::class, 'index'])->name('costos');
+    Route::put('/costos/material/{id}', [MaterialCostoController::class, 'updateMaterial'])->name('updateMaterial');
+    Route::put('/costos/herraje/{id}', [MaterialCostoController::class, 'updateHerraje'])->name('updateHerraje');
+});

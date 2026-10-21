@@ -92,6 +92,13 @@
                                 Terminal de Taller
                             </a>
                         </li>
+                        <!-- Enlace exclusivo Costos de Materiales (Maestros y Empresas) -->
+                        <li class="nav-item">
+                            <a href="{{ route('materiales.costos') }}" class="nav-link fw-semibold {{ request()->routeIs('materiales.*') ? 'active text-warning' : 'text-white-50' }} d-flex align-items-center gap-1">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                                Costos de Materiales
+                            </a>
+                        </li>
 
                         @auth
                             <!-- Si es Administrador Principal -->
