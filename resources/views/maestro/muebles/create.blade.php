@@ -283,7 +283,7 @@
         <div class="d-flex gap-2 align-items-center">
             <a href="{{ route('maestro.dashboard') }}" class="btn btn-light border fw-bold text-secondary px-3 py-2 rounded-2">Cancelar</a>
             
-            <button type="button" class="btn btn-outline-primary fw-bold px-3 py-2 rounded-2 shadow-sm d-flex align-items-center gap-1" id="btn-cotizar-bom" title="Calcular materiales, planchas y costos en vivo">
+            <button type="button" class="btn btn-outline-warning text-dark fw-bold px-3 py-2 rounded-2 shadow-sm d-flex align-items-center gap-1" id="btn-cotizar-bom" title="Calcular materiales, planchas y costos en vivo">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Cotizar BOM
             </button>
