@@ -563,12 +563,12 @@
 
             // Texturas
             const textureCatalog = {
-                'roble': '{{ asset("textures/roble_natural.jpg") }}',
-                'nogal': '{{ asset("textures/nogal_oscuro.jpg") }}',
-                'blanca': '{{ asset("textures/melamina_blanca.jpg") }}',
-                'grafito': '{{ asset("textures/gris_grafito.jpg") }}',
-                'marmol': '{{ asset("textures/marmol_calacatta.jpg") }}',
-                'haya': '{{ asset("textures/haya_madera.jpg") }}'
+                'roble': { url: '{{ asset("textures/roble_natural.jpg") }}', fallbackColor: 0xd2a679 },
+                'nogal': { url: '{{ asset("textures/nogal_oscuro.jpg") }}', fallbackColor: 0x5c4033 },
+                'blanca': { url: '{{ asset("textures/melamina_blanca.jpg") }}', fallbackColor: 0xf5f5f5 },
+                'grafito': { url: '{{ asset("textures/gris_grafito.jpg") }}', fallbackColor: 0x3a3d42 },
+                'marmol': { url: '{{ asset("textures/marmol_calacatta.jpg") }}', fallbackColor: 0xeaecef },
+                'haya': { url: '{{ asset("textures/haya_madera.jpg") }}', fallbackColor: 0xd8a47f }
             };
             const textureLoader = new THREE.TextureLoader();
             const edgeMat = new THREE.LineBasicMaterial({ color: 0x1f2937, linewidth: 1 });
@@ -585,17 +585,32 @@
                 const h = o.h || 100;
                 const d = o.d || 100;
                 const geom = new THREE.BoxGeometry(w, h, d);
-                const texUrl = textureCatalog[o.textureKey || 'roble'] || textureCatalog['roble'];
-                const tex = textureLoader.load(texUrl);
-                tex.wrapS = THREE.RepeatWrapping;
-                tex.wrapT = THREE.RepeatWrapping;
-                tex.repeat.set(Math.max(1, +(w/400).toFixed(1)), Math.max(1, +(h/400).toFixed(1)));
+                const key = o.textureKey || 'roble';
+                const texInfo = textureCatalog[key] || textureCatalog['roble'];
 
                 const mat = new THREE.MeshStandardMaterial({
-                    map: tex,
+                    color: texInfo.fallbackColor || 0xd2a679,
                     roughness: 0.55,
                     metalness: 0.05
                 });
+
+                textureLoader.load(
+                    texInfo.url,
+                    (tex) => {
+                        tex.wrapS = THREE.RepeatWrapping;
+                        tex.wrapT = THREE.RepeatWrapping;
+                        tex.repeat.set(Math.max(1, +(w/400).toFixed(1)), Math.max(1, +(h/400).toFixed(1)));
+                        mat.color.setHex(0xffffff);
+                        mat.map = tex;
+                        mat.needsUpdate = true;
+                        if (renderer) renderer.render(scene, camera);
+                    },
+                    undefined,
+                    () => {
+                        mat.color.setHex(texInfo.fallbackColor || 0xd2a679);
+                        mat.needsUpdate = true;
+                    }
+                );
 
                 const mesh = new THREE.Mesh(geom, mat);
                 if (o.pos) mesh.position.set(o.pos[0], o.pos[1], o.pos[2]);

@@ -10,12 +10,37 @@ use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\FavoritoController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\MuebleController;
+use App\Http\Controllers\EmpresaEmpleadoController;
+use App\Http\Controllers\EmpresaAuditoriaController;
+use App\Http\Controllers\TallerArmadoController;
 
 // --- RUTAS PÚBLICAS ---
 Route::get('/', [WelcomeController::class, 'index'])->name('inicio');
 Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo.index');
 Route::get('/catalogo/{id}', [CatalogoController::class, 'show'])->name('catalogo.show');
 Route::get('/catalogo/{id}/guia-armado', [CatalogoController::class, 'guiaArmado'])->name('catalogo.armado');
+
+// --- MÓDULO B2B CORPORATIVO (MADEART & AUDITORÍA FORENSE) ---
+Route::prefix('empresa')->name('empresa.')->group(function () {
+    // Módulo A: Gestión Masiva de Personal y Subroles
+    Route::get('/empleados', [EmpresaEmpleadoController::class, 'index'])->name('empleados.index');
+    Route::post('/empleados/generar-lote', [EmpresaEmpleadoController::class, 'generarLote'])->name('empleados.generarLote');
+    Route::post('/empleados/{id}/reset-password', [EmpresaEmpleadoController::class, 'resetPassword'])->name('empleados.resetPassword');
+    Route::patch('/empleados/{id}/cambiar-subrol', [EmpresaEmpleadoController::class, 'cambiarSubrol'])->name('empleados.cambiarSubrol');
+
+    // Módulo B: Consola de Auditoría Forense (Append-Only)
+    Route::get('/auditoria', [EmpresaAuditoriaController::class, 'index'])->name('auditoria.index');
+});
+
+// --- MÓDULO TALLER Y OPERARIOS DE PLANTA (FASE 3) ---
+Route::prefix('taller')->name('taller.')->group(function () {
+    Route::get('/', [TallerArmadoController::class, 'index'])->name('index');
+    Route::get('/armado/{id}', [TallerArmadoController::class, 'show'])->name('armado');
+    Route::post('/armado/{id}/progreso', [TallerArmadoController::class, 'actualizarProgreso'])->name('progreso');
+});
+
+// Endpoint API para cálculo BOM en tiempo real
+Route::post('/api/muebles/calcular-bom', [MuebleController::class, 'calcularBom'])->name('api.muebles.bom');
 
 // Rutas de autenticación (Login, Registro)
 Auth::routes();

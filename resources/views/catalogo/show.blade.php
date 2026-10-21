@@ -354,47 +354,50 @@
 
         // Catalogo de texturas para el visor de catalogo
         const textureCatalog = {
-            'roble': { url: '{{ asset("textures/roble_natural.jpg") }}', scale: 400 },
-            'nogal': { url: '{{ asset("textures/nogal_oscuro.jpg") }}', scale: 400 },
-            'blanca': { url: '{{ asset("textures/melamina_blanca.jpg") }}', scale: 500 },
-            'grafito': { url: '{{ asset("textures/gris_grafito.jpg") }}', scale: 500 },
-            'marmol': { url: '{{ asset("textures/marmol_calacatta.jpg") }}', scale: 600 },
-            'haya': { url: '{{ asset("textures/haya_madera.jpg") }}', scale: 400 }
+            'roble': { url: '{{ asset("textures/roble_natural.jpg") }}', fallbackColor: 0xd2a679, scale: 400 },
+            'nogal': { url: '{{ asset("textures/nogal_oscuro.jpg") }}', fallbackColor: 0x5c4033, scale: 400 },
+            'blanca': { url: '{{ asset("textures/melamina_blanca.jpg") }}', fallbackColor: 0xf5f5f5, scale: 500 },
+            'grafito': { url: '{{ asset("textures/gris_grafito.jpg") }}', fallbackColor: 0x3a3d42, scale: 500 },
+            'marmol': { url: '{{ asset("textures/marmol_calacatta.jpg") }}', fallbackColor: 0xeaecef, scale: 600 },
+            'haya': { url: '{{ asset("textures/haya_madera.jpg") }}', fallbackColor: 0xd8a47f, scale: 400 }
         };
 
         const textureLoader = new THREE.TextureLoader();
-        const cachedTex = {};
-        function getTexture(k) {
-            if (!textureCatalog[k]) k = 'roble';
-            if (!cachedTex[k]) {
-                const tex = textureLoader.load(textureCatalog[k].url, () => {
-                    if (renderer) renderer.render(scene, camera);
-                });
-                tex.wrapS = THREE.RepeatWrapping;
-                tex.wrapT = THREE.RepeatWrapping;
-                cachedTex[k] = tex;
-            }
-            return cachedTex[k];
-        }
 
-        function getMaterial(key, w, h, d) {
+        function createPieceMaterial(key, w, h, d) {
             if (!textureCatalog[key]) key = 'roble';
-            const baseTex = getTexture(key);
-            const tex = baseTex.clone();
-            tex.wrapS = THREE.RepeatWrapping;
-            tex.wrapT = THREE.RepeatWrapping;
-            tex.needsUpdate = true;
-            const scale = textureCatalog[key].scale || 400;
+            const info = textureCatalog[key];
+            const scale = info.scale || 400;
             const maxDim1 = Math.max(w, h);
             const maxDim2 = Math.max(Math.min(w, h), d);
-            tex.repeat.set(Math.max(1, +(maxDim1 / scale).toFixed(2)), Math.max(1, +(maxDim2 / scale).toFixed(2)));
+            const rX = Math.max(1, +(maxDim1 / scale).toFixed(2));
+            const rY = Math.max(1, +(maxDim2 / scale).toFixed(2));
 
-            return new THREE.MeshStandardMaterial({
-                map: tex,
-                color: 0xffffff,
+            const mat = new THREE.MeshStandardMaterial({
+                color: info.fallbackColor || 0xd2a679,
                 roughness: 0.55,
                 metalness: 0.05
             });
+
+            textureLoader.load(
+                info.url,
+                (tex) => {
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    tex.repeat.set(rX, rY);
+                    mat.color.setHex(0xffffff);
+                    mat.map = tex;
+                    mat.needsUpdate = true;
+                    if (renderer) renderer.render(scene, camera);
+                },
+                undefined,
+                () => {
+                    mat.color.setHex(info.fallbackColor || 0xd2a679);
+                    mat.needsUpdate = true;
+                }
+            );
+
+            return mat;
         }
 
         const edgeMat = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 1 });
@@ -405,7 +408,7 @@
             const h = o.h || 100;
             const d = o.d || 100;
             const geom = new THREE.BoxGeometry(w, h, d);
-            const mat = getMaterial(o.textureKey || 'roble', w, h, d);
+            const mat = createPieceMaterial(o.textureKey || 'roble', w, h, d);
             const mesh = new THREE.Mesh(geom, mat);
             if (o.pos) mesh.position.set(o.pos[0], o.pos[1], o.pos[2]);
             if (o.rot) mesh.rotation.set(o.rot[0], o.rot[1], o.rot[2]);

@@ -4,20 +4,44 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Mueble;
+use App\Models\MuebleMaterial;
+use App\Services\MuebleBomService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class MuebleController extends Controller
 {
-    /**
-     * Muestra el formulario para crear un mueble.
-     */
-    public function create()
+    protected MuebleBomService $bomService;
+
+    public function __construct(MuebleBomService $bomService)
     {
-        return view('maestro.muebles.create');
+        $this->bomService = $bomService;
     }
 
     /**
-     * Guarda el nuevo mueble en la base de datos.
+     * Muestra el formulario para crear un mueble en el diseñador 3D.
+     */
+    public function create()
+    {
+        $materiales = MuebleMaterial::all();
+        return view('maestro.muebles.create', compact('materiales'));
+    }
+
+    /**
+     * Endpoint API para calcular en tiempo real el BOM (Bill of Materials) desde Three.js.
+     */
+    public function calcularBom(Request $request)
+    {
+        $piezas = $request->input('piezas', []);
+        $idMaterial = (int) $request->input('material_id', 1);
+
+        $bom = $this->bomService->calcularBom($piezas, $idMaterial);
+
+        return response()->json($bom);
+    }
+
+    /**
+     * Guarda el nuevo mueble tanto en el catálogo general como en la arquitectura normalizada B2B.
      */
     public function store(Request $request)
     {
@@ -32,7 +56,7 @@ class MuebleController extends Controller
             'imagen_base64'   => 'nullable|string',
         ]);
 
-        // Subir imagen si se proporciona como archivo o captura base64
+        // 1. Procesar captura o archivo de imagen
         $rutaImagen = null;
         if ($request->hasFile('imagen')) {
             $rutaImagen = $request->file('imagen')->store('muebles', 'public');
@@ -50,9 +74,9 @@ class MuebleController extends Controller
             }
         }
 
-        // Crear registro
-        Mueble::create([
-            'user_id'         => auth()->id(),
+        // 2. Persistencia en la tabla legacy 'muebles'
+        $muebleLegacy = Mueble::create([
+            'user_id'         => auth()->id() ?? 1,
             'nombre'          => $request->nombre,
             'material'        => $request->material,
             'precio'          => $request->precio,
@@ -64,6 +88,54 @@ class MuebleController extends Controller
             'vistas'          => 0,
         ]);
 
-        return redirect()->route('maestro.dashboard')->with('exito', 'Mueble publicado correctamente en el catálogo.');
+        // 3. Persistencia simultánea en el Modelo B2B Normalizado (muebles_disenos, piezas, herrajes BOM)
+        try {
+            $piezasArray = [];
+            if ($request->filled('estructura_json')) {
+                $estructuraDecoded = json_decode($request->estructura_json, true);
+                if (is_array($estructuraDecoded)) {
+                    $piezasRaw = $estructuraDecoded['pieces'] ?? $estructuraDecoded['piezas'] ?? $estructuraDecoded;
+                    if (is_array($piezasRaw)) {
+                        foreach ($piezasRaw as $idx => $p) {
+                            $piezasArray[] = [
+                                'nombre' => $p['name'] ?? $p['nombre'] ?? ('Pieza #' . ($idx + 1)),
+                                'ancho_mm' => (float) ($p['width'] ?? $p['w'] ?? 500),
+                                'alto_mm' => (float) ($p['height'] ?? $p['h'] ?? 500),
+                                'espesor_mm' => (float) ($p['depth'] ?? $p['d'] ?? 18),
+                                'posicion_x' => (float) ($p['x'] ?? 0),
+                                'posicion_y' => (float) ($p['y'] ?? 0),
+                                'posicion_z' => (float) ($p['z'] ?? 0),
+                                'rotacion_x' => (float) ($p['rotX'] ?? 0),
+                                'rotacion_y' => (float) ($p['rotY'] ?? 0),
+                                'rotacion_z' => (float) ($p['rotZ'] ?? 0),
+                            ];
+                        }
+                    }
+                }
+            }
+
+            // Calcular BOM de herrajes e insumos
+            $bom = $this->bomService->calcularBom($piezasArray);
+
+            $this->bomService->guardarProyectoCompleto([
+                'creador_id' => auth()->id() ?? 1,
+                'empresa_id' => 1, // Madeart
+                'categoria_id' => 1, // Oficina / General
+                'nivel_id' => 2, // Intermedio
+                'nombre' => $request->nombre,
+                'descripcion' => $request->descripcion,
+                'estructura_3d' => $request->estructura_json ?? '{}',
+                'imagen_render' => $rutaImagen,
+                'precio_total' => $request->precio ?? $bom['costo_total'],
+                'publicado' => true,
+                'material_id' => $bom['material_id'],
+                'piezas' => $bom['piezas'],
+                'herrajes' => $bom['herrajes'],
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo duplicar en tabla B2B normalizada: ' . $e->getMessage());
+        }
+
+        return redirect()->route('maestro.dashboard')->with('exito', 'Mueble publicado correctamente en el catálogo y registrado en el sistema B2B de planta.');
     }
 }

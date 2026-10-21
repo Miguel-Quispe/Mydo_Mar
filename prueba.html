@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensa de Arquitectura de Base de Datos B2B — PolloMuebles / Mydo-Mar</title>
+    <!-- Google Fonts & Mermaid.js CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            er: {
+                useMaxWidth: true,
+                fontSize: 12
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #131c2e;
+            --bg-card: #1a263d;
+            --border-color: #263859;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --cyan-accent: #38bdf8;
+            --amber-accent: #f59e0b;
+            --emerald-accent: #10b981;
+            --purple-accent: #a855f7;
+            --pink-accent: #ec4899;
+            --rose-accent: #f43f5e;
+            --card-radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* Header Ejecutivo */
+        header.doc-header {
+            background: linear-gradient(135deg, #131e36 0%, #1e293b 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 35px 40px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header.doc-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8, #10b981);
+        }
+
+        .badge-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .badge-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        h1.title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        h1.title span {
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            max-width: 1100px;
+        }
+
+        .header-actions {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #2563eb;
+            color: #ffffff;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #475569;
+        }
+
+        /* Navegación por pestañas */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 12px 22px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .tab-btn.active {
+            color: #38bdf8;
+            background: var(--bg-secondary);
+        }
+
+        .tab-btn.active::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #38bdf8;
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Paneles */
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 4 Pilares de Defensa */
+        .defense-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .defense-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .defense-card:hover {
+            transform: translateY(-3px);
+            border-color: #3b82f6;
+        }
+
+        .defense-card .pillar-num {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .card-p1 .pillar-num { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+        .card-p2 .pillar-num { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .card-p3 .pillar-num { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .card-p4 .pillar-num { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+
+        .defense-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .defense-card .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.05em;
+            margin-top: 14px;
+            margin-bottom: 4px;
+        }
+
+        .defense-card p {
+            color: #cbd5e1;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .callout-box {
+            background: rgba(30, 41, 59, 0.7);
+            border-left: 4px solid #38bdf8;
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 25px 0;
+            font-size: 0.95rem;
+        }
+
+        .callout-box strong {
+            color: #38bdf8;
+        }
+
+        /* Diagrama Mermaid */
+        .diagram-container {
+            background: #ffffff;
+            border-radius: var(--card-radius);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-x: auto;
+            margin-bottom: 25px;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        .legend-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 15px 25px;
+            border-radius: var(--card-radius);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+
+        /* Tablas de Diccionario de Datos */
+        .table-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .table-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-tag {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 4px;
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            font-family: 'Fira Code', monospace;
+        }
+
+        table.dict-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        table.dict-table th {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 10px 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        table.dict-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+        }
+
+        table.dict-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .col-pk {
+            color: #fbbf24;
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .col-fk {
+            color: #c084fc;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .col-type {
+            font-family: 'Fira Code', monospace;
+            color: #38bdf8;
+            font-size: 0.82rem;
+        }
+
+        /* Código SQL y Consultas Demostrativas */
+        .code-box {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 18px 22px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+
+        .sql-keyword { color: #f43f5e; font-weight: 600; }
+        .sql-func { color: #38bdf8; }
+        .sql-table { color: #fbbf24; }
+        .sql-string { color: #34d399; }
+        .sql-comment { color: #64748b; font-style: italic; }
+
+        /* Estilos de Integración de Pantallas y Mockups UI */
+        .screen-flow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .screen-flow-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 22px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .screen-flow-card:hover {
+            transform: translateY(-2px);
+            border-color: #38bdf8;
+        }
+
+        .screen-flow-card .role-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .mockup-window {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 25px 0 40px 0;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+        }
+
+        .mockup-header {
+            background: #1e293b;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+        }
+
+        .mockup-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+
+        .mockup-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .mockup-body {
+            padding: 24px;
+        }
+
+        .db-tag {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.72rem;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .db-tag-green {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .db-tag-amber {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        .db-tag-purple {
+            background: rgba(168, 85, 247, 0.12);
+            color: #c084fc;
+            border-color: rgba(168, 85, 247, 0.25);
+        }
+
+        .db-tag-pink {
+            background: rgba(236, 72, 153, 0.12);
+            color: #f472b6;
+            border-color: rgba(236, 72, 153, 0.25);
+        }
+
+        .mockup-form-group {
+            margin-bottom: 14px;
+        }
+
+        .mockup-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .mockup-input, .mockup-select {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 9px 12px;
+            border-radius: 6px;
+            color: #f8fafc;
+            font-size: 0.88rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .mockup-input:focus, .mockup-select:focus {
+            border-color: #38bdf8;
+        }
+
+        .mockup-btn {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mockup-btn-emerald { background: #059669; }
+        .mockup-btn-amber { background: #d97706; }
+        .mockup-btn-purple { background: #7c3aed; }
+
+        /* Media Queries para Impresión / PDF */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+            }
+            .header-actions, .tabs {
+                display: none !important;
+            }
+            .tab-panel {
+                display: block !important;
+                margin-bottom: 40px !important;
+                page-break-after: always;
+            }
+            .container {
+                max-width: 100% !important;
+            }
+            header.doc-header {
+                background: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+            }
+            h1.title, h1.title span {
+                color: #000000 !important;
+                -webkit-text-fill-color: #000000 !important;
+            }
+            .defense-card, .table-section, .legend-bar {
+                background: #ffffff !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                color: #000000 !important;
+            }
+            .defense-card p, .defense-card h3, table.dict-table td {
+                color: #000000 !important;
+            }
+            table.dict-table th {
+                background: #f1f5f9 !important;
+                color: #000000 !important;
+            }
+            .diagram-container {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+            .code-box {
+                background: #f8fafc !important;
+                color: #000000 !important;
+                border: 1px solid #ccc !important;
+            }
+            .sql-keyword { color: #b91c1c !important; }
+            .sql-func { color: #0369a1 !important; }
+            .sql-table { color: #b45309 !important; }
+            .sql-string { color: #047857 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Header Ejecutivo -->
+    <header class="doc-header">
+        <div class="badge-bar">
+            <span class="badge badge-cyan">Arquitectura B2B</span>
+            <span class="badge badge-purple">PolloMuebles / Mydo-Mar</span>
+            <span class="badge badge-emerald">Patrón HTAP</span>
+            <span class="badge badge-amber">Auditoría Forense Inmutable</span>
+        </div>
+        <h1 class="title">Memoria de Arquitectura de Base de Datos y <span>Defensa Técnica</span></h1>
+        <p class="subtitle">
+            Documento técnico y estratégico para el módulo corporativo B2B (Madeart & Empleados): Creación masiva de cuentas corporativas, subroles operativos de fábrica (Armador, Diseñador, Supervisor, Transporte), despiece 3D normalizado y auditoría estricta de credenciales mediante el motor dimensional <code>dim_tiempo</code>.
+        </p>
+
+        <div class="header-actions">
+            <button class="btn" onclick="window.print()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-10 0v4h8v-4M8 14h8"></path></svg>
+                Imprimir / Exportar a PDF Oficial
+            </button>
+            <button class="btn btn-outline" onclick="switchTab('tab-diagrama')">Ver Diagrama ERD</button>
+            <button class="btn btn-outline" onclick="switchTab('tab-defensa')">Ver 4 Pilares de Defensa</button>
+            <button class="btn btn-outline" onclick="switchTab('tab-diccionario')">Ver Diccionario de Datos</button>
+            <button class="btn btn-outline" onclick="switchTab('tab-queries')">Consultas SQL de Rendimiento</button>
+            <button class="btn btn-cyan" onclick="switchTab('tab-pantallas')" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8;">Ver Integración de Pantallas UI/UX</button>
+        </div>
+    </header>
+
+    <!-- Pestañas de Navegación -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-diagrama')">1. Diagrama Entidad-Relación (ERD)</button>
+        <button class="tab-btn" onclick="switchTab('tab-defensa')">2. Los 4 Pilares de Defensa Técnica (dim_tiempo)</button>
+        <button class="tab-btn" onclick="switchTab('tab-diccionario')">3. Diccionario de Datos Completo (15 Tablas)</button>
+        <button class="tab-btn" onclick="switchTab('tab-queries')">4. Casos de Uso y Consultas SQL HTAP</button>
+        <button class="tab-btn" onclick="switchTab('tab-pantallas')">5. Integración de Pantallas y Flujos UI/UX</button>
+    </div>
+
+    <!-- Pestaña 1: Diagrama ERD -->
+    <div id="tab-diagrama" class="tab-panel active">
+        
+        <div class="legend-bar">
+            <div class="legend-item"><span class="legend-dot" style="background-color: #ec4899;"></span> Dimensión Tiempo (HTAP)</div>
+            <div class="legend-item"><span class="legend-dot" style="background-color: #a855f7;"></span> Empresa & Subroles Operativos</div>
+            <div class="legend-item"><span class="legend-dot" style="background-color: #f97316;"></span> Auditoría Forense de Credenciales</div>
+            <div class="legend-item"><span class="legend-dot" style="background-color: #f59e0b;"></span> Usuarios y Cuentas Corporativas</div>
+            <div class="legend-item"><span class="legend-dot" style="background-color: #3b82f6;"></span> Diseños 3D, Despiece y Catálogo de Herrajes</div>
+        </div>
+
+        <div class="diagram-container">
+            <div class="mermaid">
+erDiagram
+
+    dim_tiempo {
+        int id_dim_tiempo PK "Smart Key YYYYMMDDHH"
+        string fecha_hora_exacta
+        int anio
+        int mes
+        int dia
+        int hora
+    }
+
+    empresa_users {
+        int id_empresa_users PK
+        int id_dim_tiempo_creacion FK
+        string razon_social_empresa_users
+        string nit_empresa_users
+        string telefono_whatsapp_empresa_users
+        boolean activa_empresa_users
+    }
+
+    empresa_roles {
+        int id_empresa_rol PK
+        int id_empresa_users FK
+        int id_dim_tiempo_creacion FK
+        string nombre_rol_empresa "Armador, Diseñador, Supervisor, Transporte"
+        boolean es_rol_predeterminado
+    }
+
+    users_roles {
+        int id_rol_users PK
+        string nombre_rol_users "Admin Global, Gerente Empresa, Empleado, Alumno"
+    }
+
+    users_cuentas {
+        int id_usuario_users PK
+        int id_empresa_users FK "Empresa B2B Madeart"
+        int id_rol_users FK "Rol Global del Sistema"
+        int id_empresa_rol FK "Subrol Operativo de Fábrica"
+        int id_dim_tiempo_registro FK
+        string nombre_usuario_users "Ej: empleado_armador_01"
+        string email_usuario_users
+        string password_hash_users
+        boolean cuenta_generada_por_empresa
+    }
+
+    users_credenciales_auditoria {
+        int id_auditoria_credencial PK
+        int id_usuario_users FK "Empleado afectado"
+        int id_usuario_modifica_users FK "Gerente o Admin que modificó"
+        int id_dim_tiempo_evento FK "Fecha y hora exacta"
+        string tipo_cambio "CAMBIO_PASSWORD, CAMBIO_USERNAME, RESET"
+        string valor_anterior_hash
+        string valor_nuevo_hash
+    }
+
+    muebles_niveles {
+        int id_nivel_muebles PK
+        int id_dim_tiempo_creacion FK
+        string nombre_nivel_muebles
+    }
+
+    muebles_categorias {
+        int id_categoria_muebles PK
+        int id_dim_tiempo_creacion FK
+        string nombre_categoria_muebles
+        string icono_categoria_muebles
+    }
+
+    muebles_materiales {
+        int id_material_muebles PK
+        int id_dim_tiempo_creacion FK
+        string nombre_material_muebles "Melamina 18mm, Roble, Nogal"
+        string tipo_material_muebles
+        decimal espesor_material_muebles
+        decimal precio_lamina_muebles
+    }
+
+    muebles_catalogo_herrajes_global {
+        int id_catalogo_herraje_global PK
+        int id_usuario_registra_users FK
+        int id_dim_tiempo_creacion FK
+        string nombre_herraje_global "Bisagra Cangrejo, Corredera Telescópica"
+        string tipo_visibilidad_herraje "visible, oculto"
+        decimal precio_referencial
+        boolean activo_global
+    }
+
+    muebles_disenos {
+        int id_diseno_muebles PK
+        int creador_id_usuario_users FK
+        int id_empresa_users FK
+        int id_categoria_muebles FK
+        int id_nivel_muebles FK
+        int id_dim_tiempo_publicacion FK
+        string nombre_diseno_muebles
+        boolean publicado_diseno_muebles
+    }
+
+    muebles_piezas {
+        int id_pieza_muebles PK
+        int id_diseno_muebles FK
+        int id_material_muebles FK
+        string nombre_pieza_muebles "Lateral Izquierdo, Repisa, Tapa"
+        decimal ancho_mm_muebles
+        decimal alto_mm_muebles
+    }
+
+    muebles_herrajes_por_proyecto {
+        int id_herraje_proyecto PK
+        int id_diseno_muebles FK
+        int id_catalogo_herraje_global FK
+        int cantidad_necesaria_proyecto
+    }
+
+    muebles_pasos_ensamblaje {
+        int id_paso_muebles PK
+        int id_diseno_muebles FK
+        int numero_paso_muebles
+        string titulo_paso_muebles
+    }
+
+    muebles_progreso_usuario {
+        int id_progreso_muebles PK
+        int usuario_id_users FK
+        int id_diseno_muebles FK
+        int id_dim_tiempo_inicio FK
+        int paso_actual_muebles
+        decimal porcentaje_progreso_muebles
+        boolean completado_muebles
+    }
+
+    %% Relaciones temporales con dim_tiempo (HTAP)
+    dim_tiempo ||--o{ empresa_users : registra
+    dim_tiempo ||--o{ empresa_roles : registra
+    dim_tiempo ||--o{ users_cuentas : registra
+    dim_tiempo ||--o{ users_credenciales_auditoria : cronometra_evento
+    dim_tiempo ||--o{ muebles_materiales : registra_cambio_precio
+    dim_tiempo ||--o{ muebles_catalogo_herrajes_global : registra
+    dim_tiempo ||--o{ muebles_disenos : publica
+    dim_tiempo ||--o{ muebles_progreso_usuario : registra_inicio
+
+    %% Relaciones operativas corporativas B2B
+    empresa_users ||--o{ empresa_roles : define_subroles
+    empresa_roles ||--o{ users_cuentas : asigna_subrol_operativo
+    empresa_users ||--o{ users_cuentas : emplea_personal
+    users_roles ||--o{ users_cuentas : asigna_rol_sistema
+
+    %% Auditoría
+    users_cuentas ||--o{ users_credenciales_auditoria : registra_historial
+
+    %% Relaciones de Diseño, Despiece y Catálogos
+    users_cuentas ||--o{ muebles_disenos : crea
+    empresa_users ||--o{ muebles_disenos : posee
+    muebles_categorias ||--o{ muebles_disenos : clasifica
+    muebles_niveles ||--o{ muebles_disenos : define
+
+    muebles_disenos ||--o{ muebles_piezas : despiece_tecnico
+    muebles_materiales ||--o{ muebles_piezas : usa
+    muebles_catalogo_herrajes_global ||--o{ muebles_herrajes_por_proyecto : incluye
+    muebles_disenos ||--o{ muebles_herrajes_por_proyecto : requiere
+    muebles_disenos ||--o{ muebles_pasos_ensamblaje : guia_paso_a_paso
+
+    %% Seguimiento de Armado y Aprendizaje
+    users_cuentas ||--o{ muebles_progreso_usuario : ejecuta
+    muebles_disenos ||--o{ muebles_progreso_usuario : rastrea
+            </div>
+        </div>
+
+        <div class="callout-box">
+            <strong>Resumen Ejecutivo del Modelo:</strong> Este esquema desacopla la dependencia de archivos monolíticos JSON, permitiendo calcular listas de corte reales (Bill of Materials - BOM), costos de láminas y consumo de herrajes en base de datos sin necesidad de procesar los gráficos en el cliente, optimizando el rendimiento tanto para producción fabril como para el visor 3D interactivo.
+        </div>
+    </div>
+
+    <!-- Pestaña 2: Los 4 Pilares de Defensa Técnica -->
+    <div id="tab-defensa" class="tab-panel">
+        
+        <div class="callout-box" style="border-left-color: #f59e0b;">
+            <strong>Estrategia de Defensa ante el Jurado / Evaluadores:</strong> Cuando te pregunten por qué no usaste simples campos <code>created_at</code> y diseñaste la tabla <code>dim_tiempo</code> con claves foráneas en las tablas transaccionales, tu respuesta debe basarse en estos <strong>4 Pilares Formales</strong> de Arquitectura de Datos Corporativos.
+        </div>
+
+        <div class="defense-grid">
+            
+            <!-- Pilar 1 -->
+            <div class="defense-card card-p1">
+                <span class="pillar-num">Pilar 1 — Arquitectura de Software</span>
+                <h3>Arquitectura Híbrida (Transaccional + Analítica / HTAP)</h3>
+                
+                <div class="section-label">Fundamento Teórico</div>
+                <p>
+                    Los sistemas corporativos modernos no limitan la base de datos a un esquema puramente transaccional ciego (OLTP). El patrón <strong>HTAP (Hybrid Transactional/Analytical Processing)</strong> permite que la plataforma procese las operaciones cotidianas y, en la misma base de datos, entregue analítica de negocios en tiempo real sin saturar el motor.
+                </p>
+
+                <div class="section-label">Justificación en el Negocio (Madeart B2B)</div>
+                <p>
+                    Enlazar eventos críticos (publicación de muebles, altas masivas de empleados fabriles, auditoría de precios de melamina) a <code>dim_tiempo</code> permite a los gerentes de Madeart consultar tableros de control ejecutivos instantáneos sin ejecutar pesadas transformaciones de fechas.
+                </p>
+            </div>
+
+            <!-- Pilar 2 -->
+            <div class="defense-card card-p2">
+                <span class="pillar-num">Pilar 2 — Rendimiento en Bases de Datos</span>
+                <h3>Rendimiento Superior en Consultas Agregadas (Optimización por Índices Numéricos)</h3>
+                
+                <div class="section-label">Fundamento Teórico</div>
+                <p>
+                    Un campo tradicional <code>TIMESTAMP</code> almacena marcas de tiempo complejas. Al hacer reportes masivos por años, meses, trimestres o turnos de trabajo sobre cientos de miles de registros, el motor SQL se ve obligado a invocar funciones de cálculo de fecha como <code>YEAR(created_at)</code> o <code>MONTH(created_at)</code> en tiempo de ejecución, destruyendo la posibilidad de usar índices B-Tree estándar.
+                </p>
+
+                <div class="section-label">La Llave Inteligente (Smart Key)</div>
+                <p>
+                    Al vincular con <code>id_dim_tiempo</code> (formateado como un entero directo tipo <code>YYYYMMDDHH</code>, ej: <code>2026102108</code>), las agregaciones (<code>GROUP BY</code>) y los filtros por rango son instantáneos porque operan puramente sobre enteros indexados de 4 bytes.
+                </p>
+            </div>
+
+            <!-- Pilar 3 -->
+            <div class="defense-card card-p3">
+                <span class="pillar-num">Pilar 3 — Ciclo de Vida y Resiliencia</span>
+                <h3>Independencia Absoluta de Frameworks y Lógica del ORM (Future-Proofing)</h3>
+                
+                <div class="section-label">Fundamento Teórico</div>
+                <p>
+                    Los frameworks de software (Laravel, Django, Spring Boot, NestJS, Prisma) evolucionan o quedan obsoletos con el tiempo. Los campos automáticos como <code>created_at</code> o <code>updated_at</code> dependen frecuentemente de mutadores o convenios específicos del ORM de turno.
+                </p>
+
+                <div class="section-label">Contrato de Datos Permanente</div>
+                <p>
+                    Estructurar el tiempo como una entidad relacional formal en el motor SQL crea un <strong>contrato de datos permanente</strong>. Si la empresa decide migrar en 5 años a un backend en Go o Rust, o integrar Power BI / Tableau, la semántica histórica no se rompe ni depende de librerías externas.
+                </p>
+            </div>
+
+            <!-- Pilar 4 -->
+            <div class="defense-card card-p4">
+                <span class="pillar-num">Pilar 4 — Seguridad y Cumplimiento Normativo</span>
+                <h3>Trazabilidad Forense e Inmutabilidad en Auditorías B2B (Patrón Append-Only)</h3>
+                
+                <div class="section-label">Fundamento Teórico</div>
+                <p>
+                    En un contexto industrial y B2B (donde se gestionan NITs, contratos, accesos de empleados de planta y modificaciones de costos de planchas), la auditoría no puede depender de un campo mutable que se sobreescribe como <code>updated_at</code>.
+                </p>
+
+                <div class="section-label">Integridad y No Repudio</div>
+                <p>
+                    Cada cambio de credencial o alteración de subrol genera un registro inmutable (<strong>Append-Only</strong>, sin sentencias <code>UPDATE</code> ni <code>DELETE</code> permitidas) apuntando al segundo exacto en <code>dim_tiempo</code>. Esto garantiza trazabilidad forense ante cualquier reclamo laboral o brecha de seguridad interna.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Tabla Comparativa para Defensa Rápida -->
+        <div class="table-section">
+            <div class="table-section-header">
+                <div class="table-title">Cuadro Comparativo: Enfoque Convencional vs. Enfoque HTAP Corporativo</div>
+                <span class="table-tag">Argumentación Directa</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr>
+                        <th>Criterio Técnico</th>
+                        <th>Enfoque Básico (Solo timestamps de ORM)</th>
+                        <th>Nuestra Arquitectura B2B (dim_tiempo + HTAP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Agrupaciones Temporales</strong></td>
+                        <td>Requiere funciones costosas: <code>EXTRACT(YEAR FROM created_at)</code></td>
+                        <td>Instantáneo: <code>GROUP BY id_dim_tiempo</code> sobre enteros indexados.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Consumo de CPU en Reportes</strong></td>
+                        <td>Alto: Realiza escaneo secuencial (Table Scan) si se aplican funciones al campo.</td>
+                        <td>Mínimo: Index Seek directo sobre la clave primaria numérica.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Compatibilidad con BI Externo</strong></td>
+                        <td>Requiere ETL complejo para normalizar zonas horarias y formatos.</td>
+                        <td>Listo de forma nativa para conectores ODBC / JDBC / PowerBI / Metabase.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auditoría de Credenciales</strong></td>
+                        <td>Vulnerable a sobreescritura accidental o reseteos opacos.</td>
+                        <td>Historial inmutable estricto con snapshots de hashes y sellado de tiempo.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Pestaña 3: Diccionario de Datos Completo -->
+    <div id="tab-diccionario" class="tab-panel">
+        
+        <p style="color: var(--text-muted); margin-bottom: 25px;">
+            A continuación se presenta el catálogo detallado de las 15 tablas del sistema, organizadas por dominios operativos.
+        </p>
+
+        <!-- Dominio 1: Dimensión Temporal -->
+        <div class="table-section">
+            <div class="table-section-header">
+                <div class="table-title">
+                    <span class="legend-dot" style="background-color: #ec4899;"></span>
+                    Tabla: <code>dim_tiempo</code>
+                </div>
+                <span class="table-tag">Motor Analítico / Base Temporal</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Tipo</th>
+                        <th>Llave</th>
+                        <th>Descripción y Rol en el Sistema</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>id_dim_tiempo</code></td>
+                        <td class="col-type">INT / BIGINT</td>
+                        <td class="col-pk">PRIMARY KEY</td>
+                        <td>Smart Key cronológica en formato <code>YYYYMMDDHH</code> (ej: 2026102108).</td>
+                    </tr>
+                    <tr>
+                        <td><code>fecha_hora_exacta</code></td>
+                        <td class="col-type">DATETIME / TIMESTAMP</td>
+                        <td>—</td>
+                        <td>Marca de tiempo ISO exacta de alta precisión.</td>
+                    </tr>
+                    <tr>
+                        <td><code>anio</code></td>
+                        <td class="col-type">SMALLINT</td>
+                        <td>INDEX</td>
+                        <td>Año de registro para filtros agregados (ej: 2026).</td>
+                    </tr>
+                    <tr>
+                        <td><code>mes</code></td>
+                        <td class="col-type">TINYINT</td>
+                        <td>INDEX</td>
+                        <td>Mes del calendario (1 al 12).</td>
+                    </tr>
+                    <tr>
+                        <td><code>dia</code></td>
+                        <td class="col-type">TINYINT</td>
+                        <td>INDEX</td>
+                        <td>Día del mes (1 al 31).</td>
+                    </tr>
+                    <tr>
+                        <td><code>hora</code></td>
+                        <td class="col-type">TINYINT</td>
+                        <td>INDEX</td>
+                        <td>Hora del día (0 a 23) para auditoría de turnos laborales.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dominio 2: Corporativo B2B y Auditoría -->
+        <div class="table-section">
+            <div class="table-section-header">
+                <div class="table-title">
+                    <span class="legend-dot" style="background-color: #a855f7;"></span>
+                    Tabla: <code>empresa_users</code>
+                </div>
+                <span class="table-tag">Entidad B2B Madeart</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr><th>Campo</th><th>Tipo</th><th>Llave</th><th>Descripción</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>id_empresa_users</code></td><td class="col-type">INT AUTO_INCREMENT</td><td class="col-pk">PK</td><td>Identificador único de la empresa cliente o asociada.</td></tr>
+                    <tr><td><code>id_dim_tiempo_creacion</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; dim_tiempo</td><td>Sello temporal inmutable de registro corporativo.</td></tr>
+                    <tr><td><code>razon_social_empresa_users</code></td><td class="col-type">VARCHAR(191)</td><td>—</td><td>Nombre legal o comercial de la empresa (ej: Madeart S.R.L.).</td></tr>
+                    <tr><td><code>nit_empresa_users</code></td><td class="col-type">VARCHAR(45)</td><td>UNIQUE</td><td>Número de Identificación Tributaria formal.</td></tr>
+                    <tr><td><code>telefono_whatsapp_empresa_users</code></td><td class="col-type">VARCHAR(30)</td><td>—</td><td>Contacto oficial para alertas y pedidos automáticos.</td></tr>
+                    <tr><td><code>activa_empresa_users</code></td><td class="col-type">BOOLEAN</td><td>—</td><td>Bandera de suscripción o estado operativo vigente.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-section">
+            <div class="table-section-header">
+                <div class="table-title">
+                    <span class="legend-dot" style="background-color: #a855f7;"></span>
+                    Tabla: <code>empresa_roles</code>
+                </div>
+                <span class="table-tag">Subroles Operativos Internos</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr><th>Campo</th><th>Tipo</th><th>Llave</th><th>Descripción</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>id_empresa_rol</code></td><td class="col-type">INT AUTO_INCREMENT</td><td class="col-pk">PK</td><td>Identificador del subrol fabril.</td></tr>
+                    <tr><td><code>id_empresa_users</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; empresa_users</td><td>Empresa propietaria de la definición del rol.</td></tr>
+                    <tr><td><code>id_dim_tiempo_creacion</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; dim_tiempo</td><td>Momento exacto en que se configuró el subrol.</td></tr>
+                    <tr><td><code>nombre_rol_empresa</code></td><td class="col-type">VARCHAR(80)</td><td>—</td><td>Perfil específico: <em>Armador, Diseñador, Supervisor, Transporte</em>.</td></tr>
+                    <tr><td><code>es_rol_predeterminado</code></td><td class="col-type">BOOLEAN</td><td>—</td><td>Indica si se asigna automáticamente a nuevos empleados.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-section">
+            <div class="table-section-header">
+                <div class="table-title">
+                    <span class="legend-dot" style="background-color: #f59e0b;"></span>
+                    Tabla: <code>users_cuentas</code>
+                </div>
+                <span class="table-tag">Identidad de Acceso al Sistema</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr><th>Campo</th><th>Tipo</th><th>Llave</th><th>Descripción</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>id_usuario_users</code></td><td class="col-type">INT AUTO_INCREMENT</td><td class="col-pk">PK</td><td>ID principal de cuenta en la plataforma.</td></tr>
+                    <tr><td><code>id_empresa_users</code></td><td class="col-type">INT (NULLABLE)</td><td class="col-fk">FK &rarr; empresa_users</td><td>Empresa a la que pertenece (NULL para independientes).</td></tr>
+                    <tr><td><code>id_rol_users</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; users_roles</td><td>Rol macro: Admin Global, Gerente, Empleado, Alumno.</td></tr>
+                    <tr><td><code>id_empresa_rol</code></td><td class="col-type">INT (NULLABLE)</td><td class="col-fk">FK &rarr; empresa_roles</td><td>Subrol fabril específico dentro de la empresa.</td></tr>
+                    <tr><td><code>id_dim_tiempo_registro</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; dim_tiempo</td><td>Fecha/hora inteligente de creación de cuenta.</td></tr>
+                    <tr><td><code>nombre_usuario_users</code></td><td class="col-type">VARCHAR(100)</td><td>UNIQUE</td><td>Identificador único de login (ej: <code>madeart_armador_01</code>).</td></tr>
+                    <tr><td><code>email_usuario_users</code></td><td class="col-type">VARCHAR(191)</td><td>UNIQUE</td><td>Correo electrónico corporativo o personal.</td></tr>
+                    <tr><td><code>password_hash_users</code></td><td class="col-type">VARCHAR(255)</td><td>—</td><td>Hash seguro de credencial (Bcrypt / Argon2id).</td></tr>
+                    <tr><td><code>cuenta_generada_por_empresa</code></td><td class="col-type">BOOLEAN</td><td>—</td><td>True si fue dada de alta por lote desde el panel de gerencia.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-section">
+            <div class="table-section-header">
+                <div class="table-title">
+                    <span class="legend-dot" style="background-color: #f97316;"></span>
+                    Tabla: <code>users_credenciales_auditoria</code>
+                </div>
+                <span class="table-tag">Trazabilidad Forense Append-Only</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr><th>Campo</th><th>Tipo</th><th>Llave</th><th>Descripción</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>id_auditoria_credencial</code></td><td class="col-type">BIGINT AUTO_INCREMENT</td><td class="col-pk">PK</td><td>Identificador secuencial inmutable de auditoría.</td></tr>
+                    <tr><td><code>id_usuario_users</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; users_cuentas</td><td>Usuario objetivo afectado por la modificación.</td></tr>
+                    <tr><td><code>id_usuario_modifica_users</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; users_cuentas</td><td>Gerente o Administrador responsable que ejecutó la acción.</td></tr>
+                    <tr><td><code>id_dim_tiempo_evento</code></td><td class="col-type">INT</td><td class="col-fk">FK &rarr; dim_tiempo</td><td>Momento del suceso referenciado a la línea temporal.</td></tr>
+                    <tr><td><code>tipo_cambio</code></td><td class="col-type">VARCHAR(60)</td><td>—</td><td><code>CAMBIO_PASSWORD</code>, <code>CAMBIO_USUARIO</code>, <code>RESET_ACCESO</code>.</td></tr>
+                    <tr><td><code>valor_anterior_hash</code></td><td class="col-type">VARCHAR(255)</td><td>—</td><td>Huella criptográfica previa para comprobar no reutilización.</td></tr>
+                    <tr><td><code>valor_nuevo_hash</code></td><td class="col-type">VARCHAR(255)</td><td>—</td><td>Huella criptográfica resultante generada.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dominio 3: Muebles, Piezas, Despiece y Herrajes -->
+        <div class="table-section">
+            <div class="table-section-header">
+                <div class="table-title">
+                    <span class="legend-dot" style="background-color: #3b82f6;"></span>
+                    Tablas del Núcleo Fabril y 3D (Despiece Técnico)
+                </div>
+                <span class="table-tag">BOM & Normalización Relacional</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr><th>Tabla</th><th>Llaves Foráneas Principales</th><th>Función y Relación con el Diseñador 3D</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>muebles_disenos</code></td>
+                        <td><code>creador_id_usuario_users</code>, <code>id_empresa_users</code>, <code>id_categoria_muebles</code>, <code>id_nivel_muebles</code>, <code>id_dim_tiempo_publicacion</code></td>
+                        <td>Cabecera del proyecto de mueble. Permite clasificar por complejidad, categoría de mercado y visibilidad B2B.</td>
+                    </tr>
+                    <tr>
+                        <td><code>muebles_piezas</code></td>
+                        <td><code>id_diseno_muebles</code>, <code>id_material_muebles</code></td>
+                        <td>Despiece milimétrico (ancho, alto, espesor) de cada tablero para el algoritmo de corte (FFDH) y planos de taller.</td>
+                    </tr>
+                    <tr>
+                        <td><code>muebles_materiales</code></td>
+                        <td><code>id_dim_tiempo_creacion</code></td>
+                        <td>Catálogo de tableros de melamina (Roble, Nogal, Blanco, Grafito) con espesores (18mm, 15mm) y costos por plancha.</td>
+                    </tr>
+                    <tr>
+                        <td><code>muebles_catalogo_herrajes_global</code></td>
+                        <td><code>id_usuario_registra_users</code>, <code>id_dim_tiempo_creacion</code></td>
+                        <td>Banco maestro de herrajes (bisagras, correderas, tiradores, minifix) con indicación de visibilidad en 3D.</td>
+                    </tr>
+                    <tr>
+                        <td><code>muebles_herrajes_por_proyecto</code></td>
+                        <td><code>id_diseno_muebles</code>, <code>id_catalogo_herraje_global</code></td>
+                        <td>Tabla intermedia que define exactamente cuántas unidades de cada herraje consume el mueble para cotización.</td>
+                    </tr>
+                    <tr>
+                        <td><code>muebles_pasos_ensamblaje</code></td>
+                        <td><code>id_diseno_muebles</code></td>
+                        <td>Secuencia paso a paso para la guía interactiva de montaje del mueble en taller.</td>
+                    </tr>
+                    <tr>
+                        <td><code>muebles_progreso_usuario</code></td>
+                        <td><code>usuario_id_users</code>, <code>id_diseno_muebles</code>, <code>id_dim_tiempo_inicio</code></td>
+                        <td>Rastreador de armado de estudiantes/empleados: paso actual, porcentaje y estado de completitud.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Pestaña 4: Casos de Uso y Consultas SQL HTAP -->
+    <div id="tab-queries" class="tab-panel">
+        
+        <div class="callout-box">
+            <strong>Demostración Práctica para el Jurado:</strong> Estas consultas demuestran cómo la tabla <code>dim_tiempo</code> y el modelo relacional resuelven preguntas complejas de negocio en microsegundos sin sobrecargar el servidor.
+        </div>
+
+        <h3 style="color: #38bdf8; margin: 25px 0 10px 0;">Caso 1: Reporte Gerencial de Productividad B2B por Mes (Cero llamadas a funciones de fecha)</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Consulta analítica instantánea sobre la clave entera <code>anio</code> y <code>mes</code> de <code>dim_tiempo</code>:
+        </p>
+        <div class="code-box">
+<span class="sql-keyword">SELECT</span> 
+    e.razon_social_empresa_users <span class="sql-keyword">AS</span> empresa,
+    t.anio,
+    t.mes,
+    <span class="sql-func">COUNT</span>(d.id_diseno_muebles) <span class="sql-keyword">AS</span> total_muebles_disenados,
+    <span class="sql-func">SUM</span>(p.ancho_mm_muebles * p.alto_mm_muebles / 1000000.0) <span class="sql-keyword">AS</span> m2_melamina_estimada
+<span class="sql-keyword">FROM</span> <span class="sql-table">empresa_users</span> e
+<span class="sql-keyword">INNER JOIN</span> <span class="sql-table">muebles_disenos</span> d <span class="sql-keyword">ON</span> d.id_empresa_users = e.id_empresa_users
+<span class="sql-keyword">INNER JOIN</span> <span class="sql-table">dim_tiempo</span> t <span class="sql-keyword">ON</span> d.id_dim_tiempo_publicacion = t.id_dim_tiempo
+<span class="sql-keyword">LEFT JOIN</span> <span class="sql-table">muebles_piezas</span> p <span class="sql-keyword">ON</span> p.id_diseno_muebles = d.id_diseno_muebles
+<span class="sql-keyword">WHERE</span> t.anio = 2026
+<span class="sql-keyword">GROUP BY</span> e.razon_social_empresa_users, t.anio, t.mes
+<span class="sql-keyword">ORDER BY</span> t.mes <span class="sql-keyword">ASC</span>;</div>
+
+        <h3 style="color: #f97316; margin: 30px 0 10px 0;">Caso 2: Auditoría Forense Inmutable de Credenciales en Planta</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Permite reconstruir segundo a segundo qué gerente o administrador modificó las credenciales de un empleado armador:
+        </p>
+        <div class="code-box">
+<span class="sql-keyword">SELECT</span> 
+    aud.id_auditoria_credencial,
+    t.fecha_hora_exacta,
+    empleado.nombre_usuario_users <span class="sql-keyword">AS</span> cuenta_afectada,
+    responsable.nombre_usuario_users <span class="sql-keyword">AS</span> modificado_por,
+    aud.tipo_cambio,
+    r_emp.nombre_rol_empresa <span class="sql-keyword">AS</span> subrol_empleado
+<span class="sql-keyword">FROM</span> <span class="sql-table">users_credenciales_auditoria</span> aud
+<span class="sql-keyword">INNER JOIN</span> <span class="sql-table">dim_tiempo</span> t <span class="sql-keyword">ON</span> aud.id_dim_tiempo_evento = t.id_dim_tiempo
+<span class="sql-keyword">INNER JOIN</span> <span class="sql-table">users_cuentas</span> empleado <span class="sql-keyword">ON</span> aud.id_usuario_users = empleado.id_usuario_users
+<span class="sql-keyword">INNER JOIN</span> <span class="sql-table">users_cuentas</span> responsable <span class="sql-keyword">ON</span> aud.id_usuario_modifica_users = responsable.id_usuario_users
+<span class="sql-keyword">LEFT JOIN</span> <span class="sql-table">empresa_roles</span> r_emp <span class="sql-keyword">ON</span> empleado.id_empresa_rol = r_emp.id_empresa_rol
+<span class="sql-keyword">WHERE</span> empleado.id_empresa_users = 1
+<span class="sql-keyword">ORDER BY</span> aud.id_auditoria_credencial <span class="sql-keyword">DESC</span>;</div>
+
+        <h3 style="color: #10b981; margin: 30px 0 10px 0;">Caso 3: Explosión de Materiales y Costo de Herrajes (Bill of Materials - BOM)</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Cálculo automatizado de insumos para cotizar la fabricación de un mueble sin abrir el diseñador 3D:
+        </p>
+        <div class="code-box">
+<span class="sql-keyword">SELECT</span> 
+    d.nombre_diseno_muebles,
+    h.nombre_herraje_global,
+    hp.cantidad_necesaria_proyecto,
+    h.precio_referencial,
+    (hp.cantidad_necesaria_proyecto * h.precio_referencial) <span class="sql-keyword">AS</span> subtotal_herraje
+<span class="sql-keyword">FROM</span> <span class="sql-table">muebles_disenos</span> d
+<span class="sql-keyword">INNER JOIN</span> <span class="sql-table">muebles_herrajes_por_proyecto</span> hp <span class="sql-keyword">ON</span> d.id_diseno_muebles = hp.id_diseno_muebles
+<span class="sql-keyword">INNER JOIN</span> <span class="sql-table">muebles_catalogo_herrajes_global</span> h <span class="sql-keyword">ON</span> hp.id_catalogo_herraje_global = h.id_catalogo_herraje_global
+<span class="sql-keyword">WHERE</span> d.id_diseno_muebles = 10;</div>
+
+    </div>
+
+    <!-- Pestaña 5: Integración de Pantallas y Flujos UI/UX -->
+    <div id="tab-pantallas" class="tab-panel">
+        
+        <div class="callout-box" style="border-left-color: #38bdf8;">
+            <strong>Integración Sistema &larr;&rarr; Base de Datos:</strong> Esta sección mapea exactamente cómo cada pantalla de la aplicación interactúa con las 15 tablas relacionales, qué roles tienen acceso y cómo se visualiza cada flujo operativo en la interfaz.
+        </div>
+
+        <!-- 1. Flujo de Navegación del Sistema -->
+        <div class="table-section" style="margin-bottom: 35px;">
+            <div class="table-section-header">
+                <div class="table-title">1. Mapa de Flujo y Navegación entre Pantallas por Rol</div>
+                <span class="table-tag">Flujo de Usuario / User Journey</span>
+            </div>
+
+            <div class="diagram-container">
+                <div class="mermaid">
+flowchart TD
+    %% Inicio y Roles
+    Login["🔐 Login Único del Sistema (/login)"] --> Router{"Identificación de Rol"}
+
+    %% Flujo Gerente Empresa
+    Router -->|Gerente B2B| DashB2B["🏢 Panel Gerencial Madeart (/empresa/dashboard)"]
+    DashB2B --> P_Empleados["👥 Gestión Masiva de Empleados (/empresa/empleados)"]
+    DashB2B --> P_Auditoria["🛡️ Consola de Auditoría Forense (/empresa/auditoria)"]
+    DashB2B --> P_Metricas["📊 Tablero HTAP de Planta (/empresa/metricas)"]
+
+    %% Flujo Diseñador 3D
+    Router -->|Diseñador / Modulador| P_Disenador["🎨 Diseñador 3D Paramétrico (/muebles/crear)"]
+    P_Disenador --> P_Despiece["📐 Despiece Técnico & BOM Herrajes (/muebles/{id}/despiece)"]
+    P_Despiece --> P_Publicar["🚀 Publicar en Catálogo Madeart"]
+
+    %% Flujo Operario / Armador
+    Router -->|Armador de Planta| P_Catalogo["📚 Catálogo de Proyectos Asignados (/taller)"]
+    P_Catalogo --> P_GuiaArmado["🔨 Guía de Ensamblaje Paso a Paso (/taller/armado/{id})"]
+    P_GuiaArmado --> P_Tracking["⏱️ Registro de Progreso en Vivo (/taller/progreso)"]
+
+    %% Acciones BD
+    P_Empleados -.->|INSERT masivo| BD_Users["💾 users_cuentas + empresa_roles"]
+    P_Auditoria -.->|SELECT inmutable| BD_Audit["💾 users_credenciales_auditoria + dim_tiempo"]
+    P_Disenador -.->|INSERT BOM| BD_Muebles["💾 muebles_disenos + muebles_piezas + muebles_herrajes"]
+    P_GuiaArmado -.->|UPDATE avance| BD_Progreso["💾 muebles_progreso_usuario"]
+    P_Metricas -.->|SELECT agregados| BD_HTAP["💾 dim_tiempo + muebles_disenos"]
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Matriz de Trazabilidad Pantalla vs Base de Datos -->
+        <div class="table-section" style="margin-bottom: 35px;">
+            <div class="table-section-header">
+                <div class="table-title">2. Matriz de Trazabilidad: Pantallas vs. Tablas de Base de Datos</div>
+                <span class="table-tag">Mapeo Técnico CRUD</span>
+            </div>
+            <table class="dict-table">
+                <thead>
+                    <tr>
+                        <th>Pantalla / Módulo</th>
+                        <th>Ruta Laravel / Vista</th>
+                        <th>Rol Autorizado</th>
+                        <th>Tablas de Base de Datos</th>
+                        <th>Operación Principal (CRUD)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Panel de Empleados B2B</strong></td>
+                        <td><code>/empresa/empleados</code><br><span style="color:#64748b; font-size:0.75rem;">empresa.empleados.index</span></td>
+                        <td><span class="badge badge-purple">Gerente Madeart</span></td>
+                        <td>
+                            <span class="db-tag">empresa_users</span>
+                            <span class="db-tag">empresa_roles</span>
+                            <span class="db-tag-green">users_cuentas</span>
+                            <span class="db-tag-pink">dim_tiempo</span>
+                        </td>
+                        <td>Alta masiva de cuentas operativas con asignación de subroles y sellado temporal.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Consola de Auditoría Forense</strong></td>
+                        <td><code>/empresa/auditoria</code><br><span style="color:#64748b; font-size:0.75rem;">empresa.auditoria.show</span></td>
+                        <td><span class="badge badge-purple">Gerente</span> / <span class="badge badge-cyan">Admin Global</span></td>
+                        <td>
+                            <span class="db-tag-amber">users_credenciales_auditoria</span>
+                            <span class="db-tag">users_cuentas</span>
+                            <span class="db-tag-pink">dim_tiempo</span>
+                        </td>
+                        <td>Consulta append-only de modificaciones de claves, logins y usuarios modificadores.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Diseñador 3D y Generador BOM</strong></td>
+                        <td><code>/muebles/crear</code><br><span style="color:#64748b; font-size:0.75rem;">maestro.muebles.create</span></td>
+                        <td><span class="badge badge-cyan">Diseñador 3D</span> / <span class="badge badge-amber">Maestro</span></td>
+                        <td>
+                            <span class="db-tag">muebles_disenos</span>
+                            <span class="db-tag">muebles_piezas</span>
+                            <span class="db-tag">muebles_materiales</span>
+                            <span class="db-tag">muebles_catalogo_herrajes_global</span>
+                            <span class="db-tag">muebles_herrajes_por_proyecto</span>
+                        </td>
+                        <td>Persistencia del despiece milimétrico, selección de tableros y herrajes por proyecto.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Terminal de Taller y Ensamble</strong></td>
+                        <td><code>/taller/armado/{id}</code><br><span style="color:#64748b; font-size:0.75rem;">catalogo.armado</span></td>
+                        <td><span class="badge badge-emerald">Armador de Planta</span></td>
+                        <td>
+                            <span class="db-tag">muebles_pasos_ensamblaje</span>
+                            <span class="db-tag-green">muebles_progreso_usuario</span>
+                            <span class="db-tag">muebles_piezas</span>
+                            <span class="db-tag-pink">dim_tiempo</span>
+                        </td>
+                        <td>Guía paso a paso 3D, marcado de avance porcentual y cálculo de tiempo de montaje.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tablero Ejecutivo HTAP</strong></td>
+                        <td><code>/empresa/metricas</code><br><span style="color:#64748b; font-size:0.75rem;">empresa.metricas.dashboard</span></td>
+                        <td><span class="badge badge-purple">Gerente Madeart</span></td>
+                        <td>
+                            <span class="db-tag-pink">dim_tiempo</span>
+                            <span class="db-tag">muebles_disenos</span>
+                            <span class="db-tag">muebles_piezas</span>
+                            <span class="db-tag">empresa_users</span>
+                        </td>
+                        <td>Agregación instantánea de m² de melamina, volumen de diseños y productividad por mes.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. Mockups Interactivos de Alta Fidelidad -->
+        <h2 style="color: #ffffff; font-size: 1.4rem; font-weight: 700; margin: 35px 0 15px 0;">
+            3. Mockups Interactivos de las Pantallas Integradas
+        </h2>
+
+        <!-- Mockup A: Pantalla B2B Gestión Masiva -->
+        <div class="mockup-window">
+            <div class="mockup-header">
+                <div class="mockup-dots">
+                    <span class="mockup-dot dot-red"></span>
+                    <span class="mockup-dot dot-yellow"></span>
+                    <span class="mockup-dot dot-green"></span>
+                </div>
+                <div class="mockup-title">Pantalla A: /empresa/empleados — Alta Masiva y Asignación de Subroles (Madeart B2B)</div>
+                <div style="font-size:0.7rem; color:#64748b;">Módulo Gerencial</div>
+            </div>
+            <div class="mockup-body">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div>
+                        <h4 style="color:#38bdf8; margin:0; font-size:1.1rem;">Planta de Producción: Madeart Carpintería & Diseño S.R.L.</h4>
+                        <p style="color:#94a3b8; font-size:0.82rem; margin:3px 0 0 0;">NIT: 1023849021 • Sello Temporal Activo: <span class="db-tag-pink">dim_tiempo: 2026102108</span></p>
+                    </div>
+                    <span class="badge badge-purple">Subrol Activo: Gerente B2B</span>
+                </div>
+
+                <div style="background:#131c2e; border:1px solid #263859; border-radius:8px; padding:18px; margin-bottom:20px;">
+                    <h5 style="color:#ffffff; margin:0 0 12px 0; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+                        <span>⚡</span> Formulario de Generación Masiva de Cuentas Operativas
+                        <span class="db-tag">INSERT &rarr; users_cuentas</span>
+                    </h5>
+                    
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:12px;">
+                        <div>
+                            <label class="mockup-label">Subrol Operativo en Planta <span class="db-tag">empresa_roles</span></label>
+                            <select class="mockup-select">
+                                <option>Armador de Muebles (Fábrica)</option>
+                                <option>Diseñador 3D / Modulador</option>
+                                <option>Supervisor de Calidad</option>
+                                <option>Transporte y Montaje</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="mockup-label">Prefijo de Usuario <span class="db-tag">nombre_usuario_users</span></label>
+                            <input class="mockup-input" value="madeart_armador" readonly>
+                        </div>
+                        <div>
+                            <label class="mockup-label">Cantidad de Cuentas a Crear</label>
+                            <input class="mockup-input" type="number" value="5" min="1" max="20">
+                        </div>
+                        <div>
+                            <label class="mockup-label">Dominio de Correo</label>
+                            <input class="mockup-input" value="@madeart.com" readonly>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.75rem; color:#94a3b8;">
+                            🛡️ Las credenciales se generan automáticamente con hashes Bcrypt y se registran en <span class="db-tag-amber">users_credenciales_auditoria</span>.
+                        </span>
+                        <button class="mockup-btn mockup-btn-emerald">
+                            <span>+</span> Generar Cuentas y Registrar en Base de Datos
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Personal -->
+                <table class="dict-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario (users_cuentas)</th>
+                            <th>Subrol Asignado (empresa_roles)</th>
+                            <th>Email Corporativo</th>
+                            <th>Fecha Creación (dim_tiempo)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>madeart_armador_01</code></td>
+                            <td><span class="badge badge-emerald">Armador de Muebles</span></td>
+                            <td>armador01@madeart.com</td>
+                            <td>2026-10-21 08:00</td>
+                            <td><button class="btn btn-outline" style="padding:3px 8px; font-size:0.75rem;">Reset Clave</button></td>
+                        </tr>
+                        <tr>
+                            <td><code>madeart_armador_02</code></td>
+                            <td><span class="badge badge-emerald">Armador de Muebles</span></td>
+                            <td>armador02@madeart.com</td>
+                            <td>2026-10-21 08:00</td>
+                            <td><button class="btn btn-outline" style="padding:3px 8px; font-size:0.75rem;">Reset Clave</button></td>
+                        </tr>
+                        <tr>
+                            <td><code>madeart_disenador_01</code></td>
+                            <td><span class="badge badge-cyan">Diseñador 3D</span></td>
+                            <td>diseno01@madeart.com</td>
+                            <td>2026-10-21 08:00</td>
+                            <td><button class="btn btn-outline" style="padding:3px 8px; font-size:0.75rem;">Reset Clave</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mockup B: Consola de Auditoría Forense -->
+        <div class="mockup-window">
+            <div class="mockup-header">
+                <div class="mockup-dots">
+                    <span class="mockup-dot dot-red"></span>
+                    <span class="mockup-dot dot-yellow"></span>
+                    <span class="mockup-dot dot-green"></span>
+                </div>
+                <div class="mockup-title">Pantalla B: /empresa/auditoria — Consola Forense Append-Only de Credenciales</div>
+                <div style="font-size:0.7rem; color:#64748b;">Seguridad B2B</div>
+            </div>
+            <div class="mockup-body">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div>
+                        <h4 style="color:#f97316; margin:0; font-size:1.05rem;">Historial de Integridad y Trazabilidad de Accesos</h4>
+                        <p style="color:#94a3b8; font-size:0.8rem; margin:2px 0 0 0;">Registros inmutables enlazados a <span class="db-tag-pink">dim_tiempo</span>. No se permiten sentencias UPDATE ni DELETE.</p>
+                    </div>
+                    <span class="badge badge-amber">Cumplimiento ISO / Forense</span>
+                </div>
+
+                <table class="dict-table">
+                    <thead>
+                        <tr>
+                            <th>ID Evento</th>
+                            <th>Timestamp Exacto (dim_tiempo)</th>
+                            <th>Empleado Objetivo</th>
+                            <th>Tipo de Modificación</th>
+                            <th>Responsable de la Acción</th>
+                            <th>Huella Previa &rarr; Resultante</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>#00841</code></td>
+                            <td>2026-10-21 08:14:22</td>
+                            <td><code>madeart_armador_01</code></td>
+                            <td><span class="badge badge-purple">RESET_PASSWORD</span></td>
+                            <td><code>gerencia_madeart</code></td>
+                            <td><span style="font-family:monospace; font-size:0.75rem; color:#64748b;">$2y$12$e8K... &rarr; $2y$12$x9A...</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>#00840</code></td>
+                            <td>2026-10-21 08:00:15</td>
+                            <td><code>madeart_armador_02</code></td>
+                            <td><span class="badge badge-cyan">CREACION_CUENTA</span></td>
+                            <td><code>gerencia_madeart</code></td>
+                            <td><span style="font-family:monospace; font-size:0.75rem; color:#64748b;">NULL &rarr; $2y$12$7kQ...</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mockup C: Diseñador 3D y Generador BOM -->
+        <div class="mockup-window">
+            <div class="mockup-header">
+                <div class="mockup-dots">
+                    <span class="mockup-dot dot-red"></span>
+                    <span class="mockup-dot dot-yellow"></span>
+                    <span class="mockup-dot dot-green"></span>
+                </div>
+                <div class="mockup-title">Pantalla C: /muebles/crear — Diseñador 3D, Despiece Técnico y Selección de Herrajes (BOM)</div>
+                <div style="font-size:0.7rem; color:#64748b;">Núcleo Three.js & Taller</div>
+            </div>
+            <div class="mockup-body">
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+                    <!-- Columna 1: Lienzo 3D Simulado -->
+                    <div style="background:#0b0f19; border:1px solid #263859; border-radius:8px; padding:20px; text-align:center; position:relative; min-height:260px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                        <div style="font-size:2.5rem; margin-bottom:10px;">📦</div>
+                        <h4 style="color:#38bdf8; margin:0;">Mueble TV Bajo Moderno (1000 x 550 x 400 mm)</h4>
+                        <p style="color:#64748b; font-size:0.8rem; margin-top:4px;">Renderizador Three.js interactivo con texturas UV métricas</p>
+                        
+                        <div style="display:flex; gap:8px; margin-top:15px;">
+                            <span class="db-tag-green">Material: Roble Natural 18mm</span>
+                            <span class="db-tag">Nivel: Intermedio / Taller</span>
+                            <span class="db-tag-pink">dim_tiempo: 2026102108</span>
+                        </div>
+                    </div>
+
+                    <!-- Columna 2: Despiece y BOM en tiempo real -->
+                    <div style="background:#131c2e; border:1px solid #263859; border-radius:8px; padding:16px;">
+                        <h5 style="color:#ffffff; margin:0 0 10px 0; font-size:0.88rem; display:flex; justify-content:space-between;">
+                            <span>Despiece de Tableros</span>
+                            <span class="db-tag">muebles_piezas</span>
+                        </h5>
+                        <ul style="font-size:0.78rem; color:#cbd5e1; list-style:none; padding:0; margin:0 0 14px 0;">
+                            <li style="padding:4px 0; border-bottom:1px solid #1e293b;">• 2x Lateral: 550 x 400 x 18 mm</li>
+                            <li style="padding:4px 0; border-bottom:1px solid #1e293b;">• 1x Cubierta Superior: 1000 x 400 x 18 mm</li>
+                            <li style="padding:4px 0; border-bottom:1px solid #1e293b;">• 1x Base Inferior: 964 x 400 x 18 mm</li>
+                            <li style="padding:4px 0;">• 1x Repisa Central: 964 x 380 x 18 mm</li>
+                        </ul>
+
+                        <h5 style="color:#ffffff; margin:0 0 10px 0; font-size:0.88rem; display:flex; justify-content:space-between;">
+                            <span>Insumos Requeridos (BOM)</span>
+                            <span class="db-tag">muebles_herrajes</span>
+                        </h5>
+                        <ul style="font-size:0.78rem; color:#cbd5e1; list-style:none; padding:0; margin:0 0 15px 0;">
+                            <li style="padding:4px 0; border-bottom:1px solid #1e293b;">• 12x Sistema Minifix con Perno</li>
+                            <li style="padding:4px 0; border-bottom:1px solid #1e293b;">• 16x Tornillo Soberbio 4x50mm</li>
+                            <li style="padding:4px 0;">• 4x Pata Niveladora de Aluminio</li>
+                        </ul>
+
+                        <button class="mockup-btn" style="width:100%; justify-content:center;">
+                            💾 Guardar y Publicar en Base de Datos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mockup D: Terminal de Taller para Armadores -->
+        <div class="mockup-window">
+            <div class="mockup-header">
+                <div class="mockup-dots">
+                    <span class="mockup-dot dot-red"></span>
+                    <span class="mockup-dot dot-yellow"></span>
+                    <span class="mockup-dot dot-green"></span>
+                </div>
+                <div class="mockup-title">Pantalla D: /taller/armado/10 — Terminal de Taller y Guía de Armado en Vivo</div>
+                <div style="font-size:0.7rem; color:#64748b;">Operario de Planta</div>
+            </div>
+            <div class="mockup-body">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div>
+                        <h4 style="color:#10b981; margin:0; font-size:1.1rem;">Orden de Montaje #ORD-042 — Estantería Vertical Compacta</h4>
+                        <p style="color:#94a3b8; font-size:0.8rem; margin:2px 0 0 0;">Operario: <code>madeart_armador_01</code> • Subrol: Armador de Muebles</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.8rem; color:#cbd5e1; font-weight:600;">Progreso General: 66%</span>
+                        <div style="width:140px; height:8px; background:#1e293b; border-radius:4px; overflow:hidden; margin-top:4px;">
+                            <div style="width:66%; height:100%; background:#10b981;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#131c2e; border:1px solid #263859; border-radius:8px; padding:18px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span class="badge badge-emerald">Paso 2 de 3: Unión de Repisas Intermedias con Minifix</span>
+                        <span class="db-tag-green">UPDATE &rarr; muebles_progreso_usuario</span>
+                    </div>
+                    <p style="color:#cbd5e1; font-size:0.88rem; line-height:1.5;">
+                        Inserte los pernos de unión en los orificios mecanizados de 5mm en ambos laterales. Coloque los tambores Minifix en las caras internas de las repisas y gire 180° en sentido horario para asegurar la rigidez estructural.
+                    </p>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+                        <button class="btn btn-outline" style="font-size:0.82rem;">◀ Paso Anterior</button>
+                        <button class="mockup-btn mockup-btn-emerald">
+                            ✓ Confirmar Paso y Avanzar (Registrar Avance en BD)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // Remover clase active de todos los botones
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        // Ocultar todos los paneles
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+        // Activar el correspondiente
+        const targetPanel = document.getElementById(tabId);
+        if (targetPanel) {
+            targetPanel.classList.add('active');
+        }
+
+        // Buscar el botón correspondiente
+        const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+        if (targetBtn) {
+            targetBtn.classList.add('active');
+        }
+    }
+</script>
+
+</body>
+</html>

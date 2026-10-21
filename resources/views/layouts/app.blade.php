@@ -34,9 +34,27 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto align-items-center gap-2">
                         
-                        <!-- Enlace público -->
+                        <!-- Enlaces públicos y módulos B2B -->
                         <li class="nav-item">
                             <a href="{{ route('catalogo.index') }}" class="nav-link fw-semibold">Explorar Catálogo</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('empresa.empleados.index') }}" class="nav-link fw-semibold text-info d-flex align-items-center gap-1">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                Madeart B2B
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('empresa.auditoria.index') }}" class="nav-link fw-semibold text-warning d-flex align-items-center gap-1">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                Auditoría Forense
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('taller.index') }}" class="nav-link fw-semibold text-success d-flex align-items-center gap-1">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                Terminal de Taller
+                            </a>
                         </li>
 
                         @auth
@@ -70,7 +88,7 @@
                                         <!-- Ícono de usuario -->
                                         <span class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle" style="width: 32px; height: 32px;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#111827" class="bi bi-person-fill" viewBox="0 0 16 16">
-                                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1m5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
                                             </svg>
                                         </span>
                                         <span class="text-warning fw-bold">Mi Perfil</span>
