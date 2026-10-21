@@ -56,7 +56,6 @@
         $pw = (float)($p['pw'] ?? 500);
         $ph = (float)($p['ph'] ?? 500);
         $m2TotalNeto += ($pw * $ph) / 1000000.0;
-        // Estimación de cantos visibles (60% de los bordes llevan tapacanto)
         $metrosLinealesCanto += (($pw * 2) + ($ph * 2)) / 1000.0 * 0.6;
     }
     $m2TotalNeto = round($m2TotalNeto, 3);
@@ -64,7 +63,7 @@
 
     // Formato de plancha estándar Masisa/Pelikano en Sudamérica: 2750 x 1830 mm = 5.0325 m2
     $areaPlanchaStd = 2.750 * 1.830;
-    $m2ConMerma = round($m2TotalNeto * 1.15, 3); // 15% merma por cortes de sierra
+    $m2ConMerma = round($m2TotalNeto * 1.15, 3);
     $planchasEstimadas = max(1, (int)ceil($m2ConMerma / $areaPlanchaStd));
     $porcentajeAprovechamiento = min(98.5, round(($m2TotalNeto / ($planchasEstimadas * $areaPlanchaStd)) * 100, 1));
     $porcentajeMerma = round(100 - $porcentajeAprovechamiento, 1);
@@ -145,6 +144,16 @@
                     @if(!empty($objetos))
                         <div id="container-3d-viewer" class="w-100 h-100 position-absolute top-0 start-0" style="display: none; background: #f8fafc;">
                             <div id="three-viewer-canvas" style="width: 100%; height: 100%;"></div>
+                            
+                            <!-- Botón para alternar visualización de tornillos en 3D -->
+                            <button type="button" id="btn-toggle-screws-3d" class="btn btn-light btn-sm position-absolute top-0 start-0 m-3 shadow-sm fw-bold border d-inline-flex align-items-center gap-1 rounded-3" style="z-index: 10;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                <span id="label-toggle-screws">Ver Tornillos 3D</span>
+                            </button>
+
+                            <!-- Tooltip de tornillo 3D clickeado -->
+                            <div id="screw-3d-tooltip" class="position-absolute bg-dark text-white p-2 rounded-3 small shadow" style="display: none; z-index: 20; pointer-events: none; font-size: 11px;"></div>
+
                             <div class="position-absolute bottom-0 start-0 m-3 bg-dark text-white px-3 py-1 rounded-pill small opacity-75 d-flex align-items-center gap-2">
                                 <span style="font-size: 11px;">Arrastra para girar · Rueda para zoom</span>
                             </div>
@@ -275,7 +284,7 @@
                     Ficha Técnica, Cortes de Melamina y Despiece
                 </h3>
                 <p class="text-muted small mb-0">
-                    Esquema de cortes en tableros, lista de piezas al milímetro, desglose exacto de tornillería y caja de herramientas recomendadas para taller.
+                    Esquema de cortes en tableros, lista de piezas al milímetro, ubicación exacta de tornillos con simulador animado de taladro y herramientas de taller.
                 </p>
             </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -330,7 +339,7 @@
                         <span class="small text-muted fw-semibold">unidades</span>
                     </div>
                     <span class="text-muted small mt-1 d-block" style="font-size: 0.75rem;">
-                        Medida 4×50mm (PH2 avellanada)
+                        4×50mm (Cota 50mm / Eje 9mm)
                     </span>
                 </div>
             </div>
@@ -343,7 +352,7 @@
                         <span class="small text-muted fw-semibold">equipos clave</span>
                     </div>
                     <span class="text-muted small mt-1 d-block" style="font-size: 0.75rem;">
-                        Broca avellanadora 4mm, escuadra, etc.
+                        Broca avellanadora 4mm, PH2, escuadra
                     </span>
                 </div>
             </div>
@@ -369,7 +378,7 @@
                 <button class="nav-link fw-bold px-3 py-2 rounded-3 d-inline-flex align-items-center gap-2" 
                         id="tab-tornillos-btn" data-bs-toggle="pill" data-bs-target="#tab-tornillos" type="button" role="tab">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                    Tornillos e Insumos de Fijación
+                    Ubicación de Tornillos y Animación de Taladro
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -557,10 +566,188 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA 3: TORNILLOS E INSUMOS DE FIJACIÓN -->
+            <!-- PESTAÑA 3: UBICACIÓN DE TORNILLOS Y SIMULADOR ANIMADO DEL TALADRO / ATORNILLADOR -->
             <div class="tab-pane fade" id="tab-tornillos" role="tabpanel">
+                
+                <!-- SECCIÓN A: SIMULADOR ANIMADO INTERACTIVO DE MARCADO, TALADRO Y ATORNILLADOR -->
+                <div class="card border rounded-4 bg-white shadow-sm p-4 mb-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 pb-3 border-bottom">
+                        <div>
+                            <span class="badge bg-warning text-dark fw-bold px-3 py-1 rounded-pill text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">
+                                Taller Interactivo Mydo-mar
+                            </span>
+                            <h4 class="fw-bold text-dark mb-1 mt-1 d-flex align-items-center gap-2">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                Animación del Taladro, Broca Guía y Destornillador
+                            </h4>
+                            <p class="text-muted small mb-0">
+                                Demostración dinámica paso a paso del marcado con escuadra, perforación con broca avellanadora 4mm y fijación a ras con punta PH2.
+                            </p>
+                        </div>
+
+                        <!-- Botones de Control de la Animación -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn btn-warning fw-bold text-dark px-3 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-1" id="btn-anim-play">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                <span id="label-anim-play">Reproducir Animación</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary fw-bold px-3 py-2 rounded-3" id="btn-anim-reset">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                Reiniciar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Pasos Selectables de la Animación -->
+                    <div class="d-flex gap-2 mb-3 overflow-auto pb-1" id="anim-step-pills">
+                        <button type="button" class="btn btn-sm btn-dark fw-bold rounded-pill px-3 py-1.5 anim-step-btn active" data-step="1">
+                            Paso 1: Marcado de Guía (Cotas 50/9mm)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary fw-bold rounded-pill px-3 py-1.5 anim-step-btn" data-step="2">
+                            Paso 2: Taladro & Broca Avellanadora 4mm
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary fw-bold rounded-pill px-3 py-1.5 anim-step-btn" data-step="3">
+                            Paso 3: Destornillador & Soberbio 4×50mm
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary fw-bold rounded-pill px-3 py-1.5 anim-step-btn" data-step="4">
+                            Paso 4: Enrase Perfecto & Tapa
+                        </button>
+                    </div>
+
+                    <!-- Lienzo de Animación SVG / Gráfico Dinámico -->
+                    <div class="position-relative overflow-hidden rounded-4 border p-3 text-center" style="background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f1f5f9 100%); min-height: 380px;">
+                        
+                        <!-- Contenedor SVG Interactivo -->
+                        <div id="anim-workbench-svg" class="w-100 d-flex justify-content-center align-items-center" style="min-height: 340px;">
+                            <!-- Inyectado vía JavaScript renderDrillAnimation() -->
+                        </div>
+
+                        <!-- Indicador Flotante de RPM / Torque -->
+                        <div class="position-absolute top-0 end-0 m-3 bg-dark text-white px-3 py-1.5 rounded-3 shadow-sm small text-start opacity-90" id="anim-telemetry-badge">
+                            <span class="text-warning fw-bold d-block" style="font-size: 0.7rem; letter-spacing: 0.05em;">ESTADO EN TALLER:</span>
+                            <span class="small fw-semibold" id="anim-telemetry-text">Marcando centro a 9mm</span>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Explicativa de la Etapa Activa -->
+                    <div class="p-3 bg-light rounded-3 border mt-3 border-start border-4 border-warning">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-warning text-dark fw-bold px-2 py-0.5 rounded" id="anim-stage-badge">Etapa 1 de 4</span>
+                            <strong class="text-dark" id="anim-stage-title">Marcado de la Guía de Centrado con Escuadra y Punzón</strong>
+                        </div>
+                        <p class="text-secondary small mb-0 lh-base" id="anim-stage-desc">
+                            Se traza una línea continua con lápiz de grafito a <strong>9 mm del borde</strong> (el eje central exacto de un tablero de melamina de 18 mm). Luego se marca la cota de <strong>50 mm desde el extremo</strong> y se hace un punto guía con punzón o granete para que la broca no resbale.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN B: REGLA TÉCNICA DE UBICACIÓN Y COTAS DE TORNILLOS EN CARPINTERÍA REAL -->
+                <div class="card border rounded-4 bg-white shadow-sm p-4 mb-4">
+                    <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/><circle cx="12" cy="12" r="10"/></svg>
+                        Regla Universal de Carpintería: Ubicación y Cotas de Tornillos
+                    </h5>
+                    <p class="text-muted small mb-3">
+                        Norma constructiva Mydo-mar para asegurar que los tornillos queden a escuadra rígida, resistan el peso sin combarse y no desportillen los extremos.
+                    </p>
+
+                    <div class="row g-4 align-items-center">
+                        <!-- Diagrama Técnico de Cotas -->
+                        <div class="col-lg-6">
+                            <div class="p-3 bg-light rounded-4 border text-center">
+                                <svg viewBox="0 0 540 280" width="100%" height="auto" style="max-height: 250px;" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Fondo sutil de dibujo técnico -->
+                                    <defs>
+                                        <pattern id="gridBlueprint" width="20" height="20" patternUnits="userSpaceOnUse">
+                                            <rect width="20" height="20" fill="#f8fafc" />
+                                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+                                        </pattern>
+                                    </defs>
+                                    <rect width="540" height="280" fill="url(#gridBlueprint)" rx="8" />
+
+                                    <!-- Tablero Vertical (Lateral) -->
+                                    <rect x="50" y="40" width="30" height="200" fill="#fef3c7" stroke="#d97706" stroke-width="2" rx="2" />
+                                    <text x="65" y="145" font-size="12" font-weight="bold" fill="#78350f" text-anchor="middle" transform="rotate(-90 65 145)">Lateral (18mm)</text>
+
+                                    <!-- Tablero Horizontal (Base o Repisa a Tope) -->
+                                    <rect x="80" y="160" width="390" height="30" fill="#fde68a" stroke="#b45309" stroke-width="2" rx="2" />
+                                    <text x="270" y="180" font-size="12" font-weight="bold" fill="#78350f" text-anchor="middle">Base / Repisa a Tope (18mm)</text>
+
+                                    <!-- Tornillo Soberbio 1 (Superior) -->
+                                    <line x1="20" y1="80" x2="135" y2="80" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                                    <polygon points="135,76 145,80 135,84" fill="#475569" />
+                                    <rect x="18" y="74" width="6" height="12" fill="#1e293b" rx="1" />
+                                    <!-- Cota 50mm -->
+                                    <line x1="50" y1="20" x2="50" y2="75" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="2,2" />
+                                    <line x1="18" y1="65" x2="50" y2="65" stroke="#0284c7" stroke-width="1.5" />
+                                    <text x="34" y="58" font-size="11" font-weight="bold" fill="#0284c7" text-anchor="middle">Esp. 18</text>
+
+                                    <!-- Tornillo Soberbio 2 (En Unión Horizontal) -->
+                                    <line x1="20" y1="175" x2="140" y2="175" stroke="#2563eb" stroke-width="7" stroke-linecap="round" />
+                                    <polygon points="140,170 152,175 140,180" fill="#2563eb" />
+                                    <circle cx="20" cy="175" r="7" fill="#1e293b" stroke="#f8fafc" stroke-width="1.5" />
+                                    
+                                    <!-- Cotas 9mm al centro de la melamina -->
+                                    <line x1="80" y1="160" x2="170" y2="160" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,3" />
+                                    <line x1="80" y1="175" x2="170" y2="175" stroke="#dc2626" stroke-width="1" />
+                                    <line x1="80" y1="190" x2="170" y2="190" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,3" />
+                                    <line x1="160" y1="160" x2="160" y2="175" stroke="#dc2626" stroke-width="1.5" />
+                                    <text x="175" y="171" font-size="11" font-weight="bold" fill="#dc2626">Eje: 9 mm</text>
+
+                                    <!-- Cota Longitud de Rosca: 50 mm -->
+                                    <line x1="80" y1="205" x2="152" y2="205" stroke="#16a34a" stroke-width="1.5" />
+                                    <line x1="80" y1="195" x2="80" y2="215" stroke="#16a34a" stroke-width="1.5" />
+                                    <line x1="152" y1="195" x2="152" y2="215" stroke="#16a34a" stroke-width="1.5" />
+                                    <text x="116" y="222" font-size="11" font-weight="bold" fill="#16a34a" text-anchor="middle">Longitud 50 mm</text>
+
+                                    <!-- Cota 50mm de extremos en profundidad -->
+                                    <rect x="220" y="240" width="280" height="24" fill="#ffffff" stroke="#94a3b8" rx="4" />
+                                    <text x="360" y="256" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">Separación estándar: 50 mm de los extremos</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Reglas Explicativas en Lista -->
+                        <div class="col-lg-6">
+                            <div class="d-flex flex-column gap-3">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="badge bg-primary rounded-circle p-2 mt-0.5" style="width: 24px; height: 24px; line-height: 10px;">1</span>
+                                    <div>
+                                        <strong class="text-dark d-block small">Distancia a los Extremos: 50 mm</strong>
+                                        <span class="text-secondary small">Nunca atornillar a menos de 40mm de las esquinas o extremos del tablero; de lo contrario el aglomerado se fractura por la tensión de la rosca.</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="badge bg-danger rounded-circle p-2 mt-0.5" style="width: 24px; height: 24px; line-height: 10px;">2</span>
+                                    <div>
+                                        <strong class="text-dark d-block small">Línea de Eje Central: 9 mm</strong>
+                                        <span class="text-secondary small">En tableros de 18 mm, la broca guía debe penetrar a exactamente 9 mm del borde. Si se desvía, el tornillo asomará por la cara interna arruinando la melamina.</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="badge bg-success rounded-circle p-2 mt-0.5" style="width: 24px; height: 24px; line-height: 10px;">3</span>
+                                    <div>
+                                        <strong class="text-dark d-block small">Separación Intermedia: Máx. 250 - 300 mm</strong>
+                                        <span class="text-secondary small">Si la profundidad del tablero excede los 450 mm, se coloca un tercer tornillo central para evitar el pandeo o apertura por peso.</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="badge bg-warning text-dark rounded-circle p-2 mt-0.5" style="width: 24px; height: 24px; line-height: 10px;">4</span>
+                                    <div>
+                                        <strong class="text-dark d-block small">Avellanado Obligatorio: 1.5 mm de profundidad</strong>
+                                        <span class="text-secondary small">La cabeza plana cónica debe quedar a 0.0 mm a ras para que las tapitas adhesivas no queden levantadas.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN C: TARJETAS TÉCNICAS DE TODOS LOS INSUMOS DE FIJACIÓN -->
                 <div class="row g-3 mb-4">
-                    
                     <!-- 1. Tornillo Soberbio 4x50mm -->
                     <div class="col-md-6 col-lg-4">
                         <div class="card border rounded-4 p-3 h-100 bg-white shadow-sm hover-shadow transition">
@@ -692,7 +879,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- Tabla Resumen para Ferretería / Lista de Compras -->
@@ -752,6 +938,7 @@
                         </table>
                     </div>
                 </div>
+
             </div>
 
             <!-- PESTAÑA 4: HERRAMIENTAS RECOMENDADAS -->
@@ -942,7 +1129,7 @@
     let currentSheetFormat = { width: 2750, height: 1830, name: '2750 × 1830 mm' };
     let activeSheetIndex = 0;
     let computedSheets = [];
-    const kerfSierra = 3; // mm de espesor del disco
+    const kerfSierra = 3;
 
     function computeSheetLayout(sheetWidth, sheetHeight, kerf, pieces) {
         if (!pieces || pieces.length === 0) return [];
@@ -968,7 +1155,7 @@
             usedArea: 0
         };
 
-        const margin = 15; // Despunte de fábrica
+        const margin = 15;
         let curX = margin;
         let curY = margin;
         let shelfHeight = 0;
@@ -1034,7 +1221,6 @@
         if (activeSheetIndex >= computedSheets.length) activeSheetIndex = 0;
         const sheet = computedSheets[activeSheetIndex];
 
-        // Actualizar paginación
         const paginationLabel = document.getElementById('sheet-pagination-label');
         const navGroup = document.getElementById('sheet-nav-group');
         const headerBadge = document.getElementById('sheet-header-badge');
@@ -1045,7 +1231,6 @@
         if (headerBadge) headerBadge.textContent = 'Hoja #' + (activeSheetIndex + 1);
         if (dimLabel) dimLabel.textContent = 'Plancha Melamina ' + currentSheetFormat.name + ' × 18 mm';
 
-        // Actualizar KPIs de la hoja
         const totalAreaM2 = (sheet.width * sheet.height) / 1000000;
         const usedAreaM2 = sheet.usedArea / 1000000;
         const wasteAreaM2 = Math.max(0, totalAreaM2 - usedAreaM2);
@@ -1056,13 +1241,11 @@
         document.getElementById('kpi-sheet-waste-area').textContent = wasteAreaM2.toFixed(2) + ' m²';
         document.getElementById('kpi-sheet-efficiency').textContent = efficiency.toFixed(1) + '%';
 
-        // Generar SVG interactivo a escala
         const W = sheet.width;
         const H = sheet.height;
 
         let piecesSvg = '';
         sheet.placed.forEach((p) => {
-            const isSelected = false;
             const textY1 = p.y + (p.cutH / 2) - 8;
             const textY2 = p.y + (p.cutH / 2) + 14;
             const fontSize = Math.min(36, Math.max(16, p.cutH * 0.09));
@@ -1074,7 +1257,6 @@
                           class="piece-rect piece-rect-${p.id}">
                         <title>#${p.id} ${p.name}: ${p.cutW} × ${p.cutH} mm</title>
                     </rect>
-                    <!-- Textos centrados si la pieza es suficientemente grande -->
                     ${p.cutW > 120 && p.cutH > 60 ? `
                         <text x="${p.x + p.cutW / 2}" y="${textY1}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="#78350f" font-family="sans-serif">
                             #${p.id} ${p.name}
@@ -1094,24 +1276,19 @@
         const svgHtml = `
             <svg viewBox="0 0 ${W} ${H}" width="100%" height="auto" style="max-height: 440px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: #f8fafc;" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <!-- Patrón rayado para área de retazo sobrante -->
                     <pattern id="hatchWaste" width="30" height="30" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
                         <line x1="0" y1="0" x2="0" y2="30" stroke="#cbd5e1" stroke-width="2" />
                     </pattern>
                 </defs>
                 
-                <!-- Fondo Total del Tablero (Área de Melamina bruta) -->
                 <rect x="0" y="0" width="${W}" height="${H}" fill="url(#hatchWaste)" stroke="#94a3b8" stroke-width="6" rx="6"/>
 
-                <!-- Texto de Retazo Sobrante en zona libre -->
                 <text x="${W - 30}" y="${H - 30}" text-anchor="end" font-size="42" font-weight="bold" fill="#94a3b8" opacity="0.6" font-family="sans-serif">
                     RETAZO REUTILIZABLE
                 </text>
 
-                <!-- Piezas ubicadas en el tablero -->
                 ${piecesSvg}
 
-                <!-- Cotas de borde del tablero -->
                 <text x="25" y="45" font-size="34" font-weight="bold" fill="#64748b" font-family="sans-serif">${W} mm</text>
                 <text x="25" y="85" font-size="28" fill="#94a3b8" font-family="sans-serif">× ${H} mm</text>
             </svg>
@@ -1119,7 +1296,6 @@
 
         container.innerHTML = svgHtml;
 
-        // Eventos hover / click en piezas del SVG para resaltar tabla
         container.querySelectorAll('.piece-cut-group').forEach((group) => {
             const id = group.getAttribute('data-piece-id');
             const rect = group.querySelector('.piece-rect');
@@ -1127,17 +1303,13 @@
             group.addEventListener('mouseenter', () => {
                 if (rect) rect.setAttribute('fill', '#fde68a');
                 const row = document.getElementById('row-piece-' + id);
-                if (row) {
-                    row.classList.add('table-warning');
-                }
+                if (row) row.classList.add('table-warning');
             });
 
             group.addEventListener('mouseleave', () => {
                 if (rect) rect.setAttribute('fill', '#fef3c7');
                 const row = document.getElementById('row-piece-' + id);
-                if (row) {
-                    row.classList.remove('table-warning');
-                }
+                if (row) row.classList.remove('table-warning');
             });
 
             group.addEventListener('click', () => {
@@ -1158,7 +1330,6 @@
         });
     }
 
-    // Botones de selector de formato de plancha
     const btnFormat2750 = document.getElementById('btn-sheet-format-2750');
     const btnFormat2440 = document.getElementById('btn-sheet-format-2440');
 
@@ -1198,11 +1369,361 @@
         }
     });
 
-    // Render inicial del diagrama de corte
     renderCurrentSheetDiagram();
 
+    // =========================================================================
+    // 2. SIMULADOR ANIMADO DEL TALADRO, BROCA GUÍA, MARCADO Y DESTORNILLADOR
+    // =========================================================================
+    let animActiveStep = 1;
+    let animPlaying = false;
+    let animTimer = null;
+    let animProgress = 0; // 0 a 100 dentro de cada paso
+    let animRafId = null;
+
+    const animStepsData = {
+        1: {
+            title: "Paso 1: Marcado de Guía de Centrado con Escuadra y Punzón",
+            badge: "Etapa 1 de 4",
+            telemetry: "Trazando cota a 9mm y 50mm",
+            desc: "Se traza una línea con escuadra y lápiz a <strong>9 mm del borde</strong> (eje central del tablero de 18 mm) y a <strong>50 mm del extremo</strong>. El punzón de impacto marca el punto exacto de inicio para que la broca no patine ni raye el folio melamínico."
+        },
+        2: {
+            title: "Paso 2: Perforación Piloto con Broca Avellanadora de 4 mm",
+            badge: "Etapa 2 de 4",
+            telemetry: "Taladro girando a 1200 RPM",
+            desc: "El taladro desciende a velocidad media (1.200 RPM). La broca guía de 4 mm perfora el tablero pasante y el avellanador cónico a 45° rebaja exactamente <strong>1.5 mm de profundidad</strong> para asentar la cabeza del tornillo sin desportillar la melamina."
+        },
+        3: {
+            title: "Paso 3: Atornillado Estructural con Tornillo Soberbio 4×50 mm",
+            badge: "Etapa 3 de 4",
+            telemetry: "Atornillador · Torque Pos. 6",
+            desc: "El atornillador inalámbrico inserta el tornillo soberbio 4×50 mm con embrague de torque calibrado (nivel 6) para no rodar la rosca. La punta Phillips PH2 magnética conduce el tornillo con firmeza hasta enrasar al milímetro."
+        },
+        4: {
+            title: "Paso 4: Enrase Perfecto a 0.0 mm y Colocación de Tapa Embellecedora",
+            badge: "Etapa 4 de 4",
+            telemetry: "Enrase a 0.0 mm · Sellado estético",
+            desc: "La cabeza avellanada queda exactamente al ras (0.0 mm) de la superficie del tablero. Se aplica una tapita adhesiva circular del color de la melamina para disimular la fijación y proteger el núcleo contra el polvo y humedad."
+        }
+    };
+
+    function updateAnimStepUI(step) {
+        animActiveStep = step;
+        const data = animStepsData[step];
+
+        const titleEl = document.getElementById('anim-stage-title');
+        const badgeEl = document.getElementById('anim-stage-badge');
+        const descEl = document.getElementById('anim-stage-desc');
+        const telemText = document.getElementById('anim-telemetry-text');
+
+        if (titleEl) titleEl.textContent = data.title;
+        if (badgeEl) badgeEl.textContent = data.badge;
+        if (descEl) descEl.innerHTML = data.desc;
+        if (telemText) telemText.textContent = data.telemetry;
+
+        document.querySelectorAll('.anim-step-btn').forEach(btn => {
+            const s = parseInt(btn.getAttribute('data-step'));
+            if (s === step) {
+                btn.classList.add('active', 'btn-dark');
+                btn.classList.remove('btn-outline-secondary');
+            } else {
+                btn.classList.remove('active', 'btn-dark');
+                btn.classList.add('btn-outline-secondary');
+            }
+        });
+
+        renderDrillAnimationSVG();
+    }
+
+    function renderDrillAnimationSVG() {
+        const container = document.getElementById('anim-workbench-svg');
+        if (!container) return;
+
+        // Renderizar un SVG técnico de altísima calidad con el estado del paso actual
+        // viewBox: 0 0 650 340
+        const step = animActiveStep;
+        const p = animProgress; // 0..100
+
+        // Variables dinámicas según el paso
+        let toolY = 0;
+        let drillRotateAngle = 0;
+        let screwDepth = 0;
+        let holeDepth = 0;
+        let punchY = 0;
+        let showCap = false;
+
+        if (step === 1) {
+            // Punzón baja y marca punto guía
+            punchY = p < 50 ? (p / 50) * 110 : 110 - ((p - 50) / 50) * 80;
+        } else if (step === 2) {
+            // Taladro baja perforando
+            toolY = p < 60 ? (p / 60) * 80 : 80 - ((p - 60) / 40) * 80;
+            holeDepth = Math.min(65, (p / 60) * 65);
+            drillRotateAngle = (Date.now() / 2) % 360;
+        } else if (step === 3) {
+            // Atornillador baja y el tornillo penetra
+            screwDepth = Math.min(75, (p / 80) * 75);
+            toolY = p < 80 ? (p / 80) * 75 : 75;
+            drillRotateAngle = (Date.now() / 3) % 360;
+        } else if (step === 4) {
+            // Tornillo enrasado y tapa colocándose
+            screwDepth = 75;
+            showCap = true;
+        }
+
+        let dynamicElements = '';
+
+        if (step === 1) {
+            // PASO 1: Escuadra de carpintero, lápiz y punzón
+            dynamicElements = `
+                <!-- Escuadra de Carpintero -->
+                <g transform="translate(180, 70)" opacity="0.85">
+                    <polygon points="0,0 200,0 200,20 20,20 20,120 0,120" fill="#cbd5e1" stroke="#64748b" stroke-width="2" />
+                    <!-- Marcas milimétricas -->
+                    <line x1="40" y1="0" x2="40" y2="8" stroke="#475569" stroke-width="1.5" />
+                    <line x1="60" y1="0" x2="60" y2="12" stroke="#475569" stroke-width="1.5" />
+                    <line x1="80" y1="0" x2="80" y2="8" stroke="#475569" stroke-width="1.5" />
+                    <line x1="100" y1="0" x2="100" y2="12" stroke="#475569" stroke-width="1.5" />
+                    <text x="105" y="15" font-size="9" font-weight="bold" fill="#334155">Escuadra 90°</text>
+                </g>
+
+                <!-- Línea de Trazado a 9mm -->
+                <line x1="150" y1="200" x2="520" y2="200" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" />
+                <text x="530" y="204" font-size="11" font-weight="bold" fill="#dc2626">Eje 9mm</text>
+
+                <!-- Cota 50mm -->
+                <line x1="330" y1="180" x2="330" y2="230" stroke="#0284c7" stroke-width="2" />
+                <circle cx="330" cy="200" r="4" fill="#dc2626" />
+                <text x="330" y="170" font-size="11" font-weight="bold" fill="#0284c7" text-anchor="middle">Cota 50mm</text>
+
+                <!-- Punzón de Impacto / Marcador Guía -->
+                <g transform="translate(330, ${30 + punchY})">
+                    <!-- Mango de punzón -->
+                    <polygon points="-8,-90 8,-90 10,-30 -10,-30" fill="#d97706" stroke="#b45309" stroke-width="1.5" />
+                    <rect x="-6" y="-30" width="12" height="15" fill="#334155" />
+                    <!-- Vástago metálico de acero cónico -->
+                    <line x1="0" y1="-15" x2="0" y2="0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+                    <polygon points="-3,-5 3,-5 0,3" fill="#475569" />
+                    
+                    <!-- Diana de Centrado brillante -->
+                    ${punchY > 90 ? `
+                        <circle cx="0" cy="0" r="14" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.8">
+                            <animate attributeName="r" values="6;16;8" dur="0.8s" repeatCount="indefinite" />
+                        </circle>
+                        <line x1="-12" y1="0" x2="12" y2="0" stroke="#ef4444" stroke-width="1.5" />
+                        <line x1="0" y1="-12" x2="0" y2="12" stroke="#ef4444" stroke-width="1.5" />
+                    ` : ''}
+                </g>
+            `;
+        } else if (step === 2) {
+            // PASO 2: Taladro con broca avellanadora perforando
+            dynamicElements = `
+                <!-- Agujero Piloto y Avellanado Progresivo -->
+                ${holeDepth > 0 ? `
+                    <!-- Agujero piloto de 4mm -->
+                    <rect x="328" y="200" width="4" height="${holeDepth}" fill="#1e293b" rx="1" />
+                    <!-- Cono de avellanado 8mm a 45° -->
+                    <polygon points="325,200 335,200 332,206 328,206" fill="#0f172a" />
+                    <!-- Chispas / virutas de melamina expulsadas -->
+                    ${toolY > 30 ? `
+                        <g opacity="0.8">
+                            <circle cx="323" cy="196" r="2" fill="#d97706" />
+                            <circle cx="337" cy="195" r="1.5" fill="#f59e0b" />
+                            <circle cx="321" cy="192" r="1" fill="#b45309" />
+                            <circle cx="339" cy="190" r="2" fill="#d97706" />
+                        </g>
+                    ` : ''}
+                ` : ''}
+
+                <!-- Taladro Inalámbrico Animado -->
+                <g transform="translate(330, ${60 + toolY})">
+                    <!-- Cuerpo del Taladro (DeWalt/Stanley style Mydo-mar) -->
+                    <path d="M-28,-140 L45,-140 L52,-90 L-10,-85 L-15,-50 L-32,-50 L-28,-140 Z" fill="#d97706" stroke="#b45309" stroke-width="2" />
+                    <!-- Empuñadura ergonómica -->
+                    <rect x="-30" y="-85" width="18" height="50" rx="4" fill="#1e293b" />
+                    <!-- Batería de litio en base -->
+                    <rect x="-35" y="-35" width="28" height="15" rx="3" fill="#0f172a" />
+                    <!-- Carcasa de engranajes metálica -->
+                    <rect x="8" y="-120" width="30" height="25" rx="3" fill="#64748b" />
+                    <!-- Mandril portabrocas giratorio -->
+                    <rect x="25" y="-115" width="22" height="15" rx="2" fill="#1e293b" />
+
+                    <!-- Broca Avellanadora 4mm con Avellanador cónico -->
+                    <g transform="translate(47, -107)">
+                        <!-- Giro 90° para apuntar hacia abajo -->
+                        <g transform="rotate(90)">
+                            <!-- Vástago -->
+                            <rect x="-2" y="-2" width="4" height="28" fill="#94a3b8" />
+                            <!-- Corona del avellanador de 8 mm -->
+                            <polygon points="-7,14 7,14 2,24 -2,24" fill="#475569" stroke="#1e293b" stroke-width="1" />
+                            <!-- Broca piloto de 4 mm con espiral -->
+                            <rect x="-2" y="24" width="4" height="30" fill="#cbd5e1" stroke="#64748b" stroke-width="0.5" />
+                            <polygon points="-2,54 2,54 0,59" fill="#475569" />
+                        </g>
+                    </g>
+
+                    <!-- Efecto de rotación de RPM -->
+                    <g transform="translate(47, -70)" opacity="0.7">
+                        <line x1="-8" y1="0" x2="8" y2="0" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" />
+                        <line x1="-6" y1="-5" x2="6" y2="5" stroke="#f59e0b" stroke-width="1.5" />
+                    </g>
+                </g>
+            `;
+        } else if (step === 3) {
+            // PASO 3: Atornillador con punta Phillips atornillando el soberbio 4x50mm
+            dynamicElements = `
+                <!-- Agujero Piloto y Avellanado -->
+                <rect x="328" y="200" width="4" height="65" fill="#1e293b" rx="1" />
+                <polygon points="325,200 335,200 332,206 328,206" fill="#0f172a" />
+
+                <!-- Tornillo Soberbio 4x50mm descendiendo -->
+                <g transform="translate(330, ${125 + screwDepth})">
+                    <!-- Cabeza cónica avellanada con muesca Phillips -->
+                    <polygon points="-5,-4 5,-4 2,2 -2,2" fill="#94a3b8" stroke="#475569" stroke-width="1" />
+                    <line x1="-3" y1="-4" x2="3" y2="-4" stroke="#1e293b" stroke-width="1" />
+                    <!-- Vástago roscado de 4x50 mm -->
+                    <rect x="-2" y="2" width="4" height="48" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8" />
+                    <!-- Espiras de rosca soberbia -->
+                    <line x1="-3" y1="10" x2="3" y2="12" stroke="#64748b" stroke-width="1.5" />
+                    <line x1="-3" y1="18" x2="3" y2="20" stroke="#64748b" stroke-width="1.5" />
+                    <line x1="-3" y1="26" x2="3" y2="28" stroke="#64748b" stroke-width="1.5" />
+                    <line x1="-3" y1="34" x2="3" y2="36" stroke="#64748b" stroke-width="1.5" />
+                    <line x1="-3" y1="42" x2="3" y2="44" stroke="#64748b" stroke-width="1.5" />
+                    <polygon points="-2,50 2,50 0,55" fill="#475569" />
+                </g>
+
+                <!-- Punta de atornillar PH2 magnética acoplada -->
+                <g transform="translate(330, ${118 + toolY})">
+                    <!-- Portapuntas magnético hexagonal -->
+                    <rect x="-4" y="-35" width="8" height="25" fill="#334155" rx="1" />
+                    <!-- Punta Phillips PH2 endurecida -->
+                    <polygon points="-3,-10 3,-10 1,2 -1,2" fill="#64748b" />
+                    <line x1="0" y1="-8" x2="0" y2="2" stroke="#1e293b" stroke-width="1.5" />
+                </g>
+            `;
+        } else if (step === 4) {
+            // PASO 4: Tornillo totalmente embutido a ras + tapita adhesiva
+            dynamicElements = `
+                <!-- Tornillo Soberbio embutido a ras -->
+                <g transform="translate(330, 200)">
+                    <polygon points="-5,0 5,0 2,6 -2,6" fill="#94a3b8" stroke="#475569" stroke-width="1" />
+                    <line x1="-3" y1="0" x2="3" y2="0" stroke="#1e293b" stroke-width="1" />
+                    <rect x="-2" y="6" width="4" height="44" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8" />
+                </g>
+
+                <!-- Cota de Enrase a 0.0 mm -->
+                <line x1="310" y1="200" x2="350" y2="200" stroke="#16a34a" stroke-width="2" />
+                <circle cx="330" cy="200" r="16" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="3,2" />
+                <text x="360" y="196" font-size="11" font-weight="bold" fill="#16a34a">Enrase a 0.0 mm</text>
+
+                <!-- Tapita Adhesiva Color Melamina -->
+                <g transform="translate(330, ${175 + (p / 100) * 23})">
+                    <ellipse cx="0" cy="0" rx="9" ry="2.5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" />
+                    <text x="0" y="-8" font-size="10" font-weight="bold" fill="#b45309" text-anchor="middle">Tapita Adhesiva</text>
+                    <path d="M 0,-5 L 0,-1" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrowDown)" />
+                </g>
+            `;
+        }
+
+        const svgContent = `
+            <svg viewBox="0 0 650 330" width="100%" height="auto" style="max-height: 330px;" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="woodCore" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#fef3c7" />
+                        <stop offset="50%" stop-color="#fde68a" />
+                        <stop offset="100%" stop-color="#fef3c7" />
+                    </linearGradient>
+                    <linearGradient id="melamineFace" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="100%" stop-color="#f8fafc" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Tablero Horizontal 1: Tablero Pasante (Lateral) Espesor 18mm -->
+                <rect x="80" y="200" width="500" height="32" fill="url(#woodCore)" stroke="#b45309" stroke-width="2" rx="2" />
+                <!-- Capa superficial de folio melamínico (1mm) -->
+                <rect x="80" y="199" width="500" height="3" fill="#ffffff" stroke="#94a3b8" stroke-width="0.8" />
+                <rect x="80" y="230" width="500" height="3" fill="#ffffff" stroke="#94a3b8" stroke-width="0.8" />
+                <text x="95" y="221" font-size="12" font-weight="bold" fill="#78350f">Tablero Pasante (Melamina 18 mm)</text>
+
+                <!-- Tablero 2 Acoplado a Tope (Base o Repisa a 90°) -->
+                <rect x="310" y="232" width="40" height="90" fill="#fde68a" stroke="#d97706" stroke-width="2" rx="2" />
+                <text x="330" y="285" font-size="10" font-weight="bold" fill="#78350f" text-anchor="middle" transform="rotate(-90 330 285)">Tablero a Tope (18mm)</text>
+
+                <!-- Elementos dinámicos de la animación actual -->
+                ${dynamicElements}
+            </svg>
+        `;
+
+        container.innerHTML = svgContent;
+    }
+
+    // Loop de animación fluida
+    function animLoop() {
+        if (!animPlaying) return;
+
+        animProgress += 1.8;
+        if (animProgress >= 100) {
+            animProgress = 0;
+            animActiveStep++;
+            if (animActiveStep > 4) {
+                animActiveStep = 1;
+            }
+            updateAnimStepUI(animActiveStep);
+        } else {
+            renderDrillAnimationSVG();
+        }
+
+        animRafId = requestAnimationFrame(animLoop);
+    }
+
+    const btnAnimPlay = document.getElementById('btn-anim-play');
+    const labelAnimPlay = document.getElementById('label-anim-play');
+    const btnAnimReset = document.getElementById('btn-anim-reset');
+
+    if (btnAnimPlay) {
+        btnAnimPlay.addEventListener('click', () => {
+            animPlaying = !animPlaying;
+            if (animPlaying) {
+                if (labelAnimPlay) labelAnimPlay.textContent = 'Pausar Simulación';
+                btnAnimPlay.classList.replace('btn-warning', 'btn-outline-warning');
+                animLoop();
+            } else {
+                if (labelAnimPlay) labelAnimPlay.textContent = 'Reanudar Simulación';
+                btnAnimPlay.classList.replace('btn-outline-warning', 'btn-warning');
+                cancelAnimationFrame(animRafId);
+            }
+        });
+    }
+
+    if (btnAnimReset) {
+        btnAnimReset.addEventListener('click', () => {
+            animPlaying = false;
+            cancelAnimationFrame(animRafId);
+            animProgress = 0;
+            if (labelAnimPlay) labelAnimPlay.textContent = 'Reproducir Animación';
+            if (btnAnimPlay) {
+                btnAnimPlay.classList.remove('btn-outline-warning');
+                btnAnimPlay.classList.add('btn-warning');
+            }
+            updateAnimStepUI(1);
+        });
+    }
+
+    // Botones de paso directo
+    document.querySelectorAll('.anim-step-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const step = parseInt(btn.getAttribute('data-step'));
+            animProgress = 50;
+            updateAnimStepUI(step);
+        });
+    });
+
+    // Render inicial del simulador de taladro
+    updateAnimStepUI(1);
+
     // ==========================================
-    // 2. VISOR 3D THREE.JS (FOTO / 3D TOGGLE)
+    // 3. VISOR 3D THREE.JS CON TORNILLOS EN 3D
     // ==========================================
     const btnViewPhoto = document.getElementById('btn-view-photo');
     const btnView3D = document.getElementById('btn-view-3d');
@@ -1211,6 +1732,68 @@
     let threeInitialized = false;
     let scene, camera, renderer, controls, animId;
     let autoRotate = true;
+    let screwsGroup = null;
+    let showScrews3D = false;
+
+    // Función para calcular posiciones de tornillos en las uniones de las piezas 3D
+    function calculateFurnitureScrews(objects) {
+        const screws = [];
+        if (!objects || objects.length === 0) return screws;
+
+        const verticals = objects.filter(o => (o.pieceType === 'vertical' || (o.w <= 25 && o.h > o.w)));
+        const horizontals = objects.filter(o => (o.pieceType === 'horizontal' || (o.h <= 25 && o.w > o.h)));
+
+        horizontals.forEach(hPiece => {
+            const hp = hPiece.pos || [0, 0, 0];
+            const hw = hPiece.w || 800;
+            const hd = hPiece.d || 400;
+            const hh = hPiece.h || 18;
+
+            verticals.forEach(vPiece => {
+                const vp = vPiece.pos || [0, 0, 0];
+                const vw = vPiece.w || 18;
+                const vd = vPiece.d || 400;
+                const vh = vPiece.h || 800;
+
+                const xDist = Math.abs(hp[0] - vp[0]);
+                const contactX = Math.abs(xDist - (hw / 2 + vw / 2)) < 8 || Math.abs(xDist - (hw / 2)) < 25;
+                const inYRange = (hp[1] >= vp[1] - vh / 2 - 20) && (hp[1] <= vp[1] + vh / 2 + 20);
+
+                if (contactX && inYRange) {
+                    const screwX = vp[0] > hp[0] ? (vp[0] + vw / 2 + 1) : (vp[0] - vw / 2 - 1);
+                    const screwDir = vp[0] > hp[0] ? 1 : -1;
+                    const screwY = hp[1];
+                    const depthMin = Math.min(hd, vd);
+                    const zOffset = Math.min(50, depthMin / 4);
+
+                    // Tornillo frontal
+                    screws.push({
+                        x: screwX, y: screwY, z: hp[2] + (depthMin / 2) - zOffset,
+                        dir: screwDir,
+                        desc: "Tornillo Soberbio 4×50mm · A " + Math.round(zOffset) + "mm del frente · Eje a 9mm"
+                    });
+
+                    // Tornillo posterior
+                    screws.push({
+                        x: screwX, y: screwY, z: hp[2] - (depthMin / 2) + zOffset,
+                        dir: screwDir,
+                        desc: "Tornillo Soberbio 4×50mm · A " + Math.round(zOffset) + "mm del fondo · Eje a 9mm"
+                    });
+
+                    // Tornillo central si profundidad > 450 mm
+                    if (depthMin > 450) {
+                        screws.push({
+                            x: screwX, y: screwY, z: hp[2],
+                            dir: screwDir,
+                            desc: "Tornillo Soberbio 4×50mm · Refuerzo central · Eje a 9mm"
+                        });
+                    }
+                }
+            });
+        });
+
+        return screws;
+    }
 
     function initThreeViewer() {
         if (threeInitialized || !objetosData || objetosData.length === 0) return;
@@ -1326,7 +1909,6 @@
             mesh.castShadow = true;
             mesh.receiveShadow = true;
 
-            // Bordes nítidos
             const edges = new THREE.EdgesGeometry(geom);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x1e293b, opacity: 0.3, transparent: true }));
             mesh.add(line);
@@ -1336,6 +1918,97 @@
         });
 
         scene.add(group);
+
+        // ==========================================
+        // GENERACIÓN DE TORNILLOS EN 3D
+        // ==========================================
+        screwsGroup = new THREE.Group();
+        const computedScrews = calculateFurnitureScrews(objetosData);
+
+        const screwHeadGeom = new THREE.CylinderGeometry(7, 5, 3, 16);
+        const screwShaftGeom = new THREE.CylinderGeometry(2.5, 2.5, 35, 12);
+        const screwHeadMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+        const screwShaftMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.9, roughness: 0.3 });
+        const ringGeom = new THREE.RingGeometry(8, 11, 24);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xd97706, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+
+        computedScrews.forEach((s) => {
+            const screwMesh = new THREE.Group();
+
+            // Cabeza
+            const head = new THREE.Mesh(screwHeadGeom, screwHeadMat);
+            head.rotation.z = Math.PI / 2;
+            screwMesh.add(head);
+
+            // Vástago penetrante
+            const shaft = new THREE.Mesh(screwShaftGeom, screwShaftMat);
+            shaft.rotation.z = Math.PI / 2;
+            shaft.position.x = s.dir > 0 ? -16 : 16;
+            screwMesh.add(shaft);
+
+            // Anillo indicador visible
+            const ring = new THREE.Mesh(ringGeom, ringMat);
+            ring.rotation.y = Math.PI / 2;
+            ring.position.x = s.dir > 0 ? 1 : -1;
+            screwMesh.add(ring);
+
+            screwMesh.position.set(s.x, s.y, s.z);
+            screwMesh.userData = { isScrew: true, desc: s.desc };
+            screwsGroup.add(screwMesh);
+        });
+
+        screwsGroup.visible = false;
+        scene.add(screwsGroup);
+
+        // Botón toggle de tornillos 3D
+        const btnToggleScrews = document.getElementById('btn-toggle-screws-3d');
+        const labelToggleScrews = document.getElementById('label-toggle-screws');
+
+        if (btnToggleScrews) {
+            btnToggleScrews.addEventListener('click', () => {
+                showScrews3D = !showScrews3D;
+                screwsGroup.visible = showScrews3D;
+                if (showScrews3D) {
+                    btnToggleScrews.classList.add('btn-warning', 'text-dark');
+                    btnToggleScrews.classList.remove('btn-light');
+                    if (labelToggleScrews) labelToggleScrews.textContent = 'Ocultar Tornillos 3D (' + computedScrews.length + ')';
+                } else {
+                    btnToggleScrews.classList.remove('btn-warning', 'text-dark');
+                    btnToggleScrews.classList.add('btn-light');
+                    if (labelToggleScrews) labelToggleScrews.textContent = 'Ver Tornillos 3D';
+                }
+            });
+        }
+
+        // Raycasting interactivo sobre tornillos 3D
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const tooltip = document.getElementById('screw-3d-tooltip');
+
+        canvasContainer.addEventListener('mousemove', (event) => {
+            if (!screwsGroup.visible || !tooltip) return;
+            const rect = canvasContainer.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(screwsGroup.children, true);
+
+            if (intersects.length > 0) {
+                let pObj = intersects[0].object;
+                while (pObj.parent && !pObj.userData.isScrew && pObj !== screwsGroup) {
+                    pObj = pObj.parent;
+                }
+                if (pObj.userData && pObj.userData.desc) {
+                    tooltip.textContent = pObj.userData.desc;
+                    tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+                    tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+                    tooltip.style.display = 'block';
+                    return;
+                }
+            }
+            tooltip.style.display = 'none';
+        });
 
         // Centrar cámara en el modelo
         const center = new THREE.Vector3();
@@ -1351,6 +2024,16 @@
         function animate() {
             animId = requestAnimationFrame(animate);
             controls.update();
+
+            // Sutil animación de pulso en los anillos de tornillos si están visibles
+            if (screwsGroup && screwsGroup.visible) {
+                const scale = 1.0 + Math.sin(Date.now() / 250) * 0.08;
+                screwsGroup.children.forEach(sMesh => {
+                    const ring = sMesh.children[2];
+                    if (ring) ring.scale.set(scale, scale, 1);
+                });
+            }
+
             renderer.render(scene, camera);
         }
         animate();
@@ -1403,7 +2086,7 @@
     }
 
     // ==========================================
-    // 3. IMPRESIÓN COMPLETA DE FICHA Y PLANOS PDF
+    // 4. IMPRESIÓN COMPLETA DE FICHA Y PLANOS PDF
     // ==========================================
     window.imprimirPlanoMueble = function() {
         const win = window.open('', '_blank');
@@ -1431,6 +2114,7 @@
                     .footer-note { background: #fffbeb; border: 1px solid #fef3c7; color: #92400e; padding: 12px; border-radius: 6px; font-size: 11px; margin-top: 25px; line-height: 1.5; }
                     .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; margin-bottom: 15px; }
                     .tool-item { background: #f9fafb; border: 1px solid #e5e7eb; padding: 6px 10px; border-radius: 6px; }
+                    .screw-rule-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; font-size: 11px; margin-bottom: 15px; color: #166534; }
                     @media print { .no-print { display: none; } body { padding: 0; } }
                 </style>
             </head>
@@ -1442,7 +2126,7 @@
                     <div>
                         <div class="brand">MYDO-MAR · SISTEMA DE CARPINTERÍA Y DISEÑO 3D</div>
                         <h1>${muebleNombre}</h1>
-                        <div style="font-size: 12px; color: #6b7280;">Ficha Técnica Oficial, Esquema de Cortes, Tornillería y Herramientas</div>
+                        <div style="font-size: 12px; color: #6b7280;">Ficha Técnica Oficial, Esquema de Cortes, Ubicación de Tornillos y Herramientas</div>
                     </div>
                     <div style="text-align: right; font-size: 12px; line-height: 1.5;">
                         <strong>Precio Estimado:</strong> Bs ${mueblePrecio}<br>
@@ -1494,7 +2178,14 @@
                     </tbody>
                 </table>
 
-                <div class="section-title">2. Tornillería e Insumos de Fijación</div>
+                <div class="section-title">2. Tornillería y Reglas de Ubicación de Fijaciones</div>
+                <div class="screw-rule-box">
+                    <strong>Reglas de Perforación y Ensamble Mydo-mar:</strong><br>
+                    • <strong>Distancia de Extremos:</strong> A 50 mm del frente y fondo del tablero.<br>
+                    • <strong>Línea de Eje Central:</strong> A 9 mm del borde (centro del espesor de melamina de 18 mm).<br>
+                    • <strong>Broca y Avellanado:</strong> Broca guía de 4 mm con avellanador de 8 mm a 1.5 mm de profundidad (cabeza a ras 0.0 mm).<br>
+                    • <strong>Separación Máxima:</strong> Entre tornillos intermedios menor o igual a 250 - 300 mm.
+                </div>
                 <table>
                     <thead>
                         <tr>
