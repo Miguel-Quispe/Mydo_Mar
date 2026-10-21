@@ -5,10 +5,16 @@
     <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
         <div class="col-md-7 col-lg-6">
             
-            <!-- Botón de Regresar -->
+            <!-- Botón de Regreso a la Pantalla Anterior -->
             <div class="mb-3">
-                <a href="{{ url('/') }}" class="btn btn-outline-secondary btn-sm fw-bold border-0 d-inline-flex align-items-center gap-2">
-                    ← Volver a la página principal
+                <a href="{{ url()->previous() != url()->current() ? url()->previous() : url('/') }}" 
+                   onclick="if (window.history.length > 1) { window.history.back(); return false; }"
+                   class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2 shadow-sm rounded-3 d-inline-flex align-items-center gap-2 bg-white">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Volver a la pantalla anterior</span>
                 </a>
             </div>
 
