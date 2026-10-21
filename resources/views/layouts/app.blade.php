@@ -15,6 +15,42 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        /* Botón de regreso con animación interactiva */
+        .btn-regresar-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            text-decoration: none !important;
+            transition: all 0.22s ease-in-out;
+            cursor: pointer;
+        }
+        .btn-regresar-back svg {
+            transition: transform 0.22s ease-in-out;
+            color: #4b5563;
+        }
+        .btn-regresar-back:hover {
+            color: #111827 !important;
+            background-color: #f3f4f6 !important;
+            border-color: #9ca3af;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12) !important;
+            transform: translateX(-4px);
+        }
+        .btn-regresar-back:hover svg {
+            transform: translateX(-3px);
+            color: #111827;
+        }
+        .btn-regresar-back:active {
+            transform: scale(0.97);
+        }
+    
     </style>
 
     <!-- Scripts -->
